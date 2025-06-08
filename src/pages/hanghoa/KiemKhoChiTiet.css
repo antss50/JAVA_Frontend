@@ -1,0 +1,126 @@
+.kiemkhochitiet-container {
+  padding: 24px;
+  font-family: Arial, sans-serif;
+}
+
+.kiemkhochitiet-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.kiemkhochitiet-search input {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.group-btn {
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 300px;
+}
+
+.kiemkhochitiet-table-section {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.kiemkhochitiet-table {
+  width: 65%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.kiemkhochitiet-table th,
+.kiemkhochitiet-table td {
+  border: 1px solid #ccc;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.kiemkhochitiet-table th {
+  background-color: #a1d0ff;
+  font-weight: bold;
+}
+
+.kiemkhochitiet-table input {
+  width: 80px;
+  padding: 6px;
+}
+
+.kiemkhochitiet-info {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kiemkhochitiet-info label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.kiemkhochitiet-info input,
+.kiemkhochitiet-info select,
+.kiemkhochitiet-info textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.kiemkhochitiet-buttons {
+  margin-top: 32px;
+  display: flex;
+  gap: 12px;
+}
+
+.kiemkhochitiet-buttons .draft,
+.kiemkhochitiet-buttons .submit {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.kiemkhochitiet-buttons .draft {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.kiemkhochitiet-buttons .submit {
+  background-color: #28a745;
+  color: white;
+}

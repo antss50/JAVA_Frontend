@@ -1,0 +1,86 @@
+.navbar {
+  display: flex;
+  gap: 20px;
+  background-color: #f8f9fa;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  align-items: center;
+}
+
+/* NavLink thường */
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Hover hoặc active */
+.nav-link:hover,
+.nav-link.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Dropdown container (gồm cả label và submenu) */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown label (giống nav-link nhưng không phải NavLink) */
+.dropdown > span {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  color: #333;
+}
+
+/* Hover effect cho dropdown label */
+.dropdown:hover > span {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Dropdown content - submenu */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  background-color: #ffffff;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 6px;
+  z-index: 1000;
+  padding: 8px 0;
+  pointer-events: auto; /* đảm bảo không bị mất hover */
+}
+
+/* Hiện submenu khi hover vùng dropdown (kể cả label hoặc menu con) */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Mục trong dropdown */
+.dropdown-item {
+  display: block;
+  padding: 8px 16px;
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Hover submenu item */
+.dropdown-item:hover {
+  background-color: #007bff;
+  color: white;
+}

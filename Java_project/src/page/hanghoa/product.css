@@ -1,0 +1,296 @@
+/* Kiểm Kho CSS */
+
+
+
+/* Thanh tìm kiếm fixed bên trái */
+.kiemkho-search-box {
+  position: fixed;
+  top: 175px;
+  left: 0;
+  width: 16.66vw;
+  min-width: 220px;
+  height: calc(100vh - 175px);
+  background-color: #f1f1f1;
+  padding: 16px 16px 16px 20px;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 900;
+}
+
+/* Tiêu đề Tìm kiếm */
+.kiemkho-search-box h4 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Input tìm kiếm */
+.kiemkho-input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Phần nội dung chính (bên phải cột tìm kiếm) */
+.kiemkho-main-content {
+  margin-left: 17vw;
+  width: 82.5vw;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  margin-top: 0px;
+  margin-bottom: 40px;
+}
+
+/* Header chứa tiêu đề + nút */
+.kiemkho-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* Tiêu đề Phiếu kiểm kho */
+.kiemkho-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  line-height: 40px;
+}
+
+/* Nút + Kiểm kho */
+.kiemkho-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  line-height: 40px;
+}
+
+.kiemkho-button:hover {
+  background-color: #0056b3;
+}
+
+/* Bảng kiểm kho */
+.kiemkho-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+
+.kiemkho-table th,
+.kiemkho-table td {
+  border: 1px solid #ccc;
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  vertical-align: middle;
+}
+
+.kiemkho-table th {
+  background-color: #a1d0ff;
+  font-weight: 700;
+}
+
+/* Scroll bar cho cột tìm kiếm nếu nội dung dài */
+.kiemkho-search-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.kiemkho-search-box::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.kiemkho-search-box::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+/* Responsive: thu nhỏ trên mobile */
+@media (max-width: 768px) {
+  .kiemkho-search-box {
+    position: fixed;
+    top: 120px;
+    left: 0;
+    width: 16.66vw;
+    min-width: 220px;
+    height: calc(100vh - 120px);
+    background-color: #f1f1f1;
+    padding: 16px 16px 16px 20px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    overflow-y: auto;
+    z-index: 900;
+  }
+
+  /* Phần nội dung chính */
+  .kiemkho-main-content {
+    margin-left: 17vw;
+    width: 82.5vw;
+    padding: 24px 32px;
+    box-sizing: border-box;
+    margin-top: 120px;
+    margin-bottom: 40px;
+  }
+
+  .kiemkho-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .kiemkho-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Kiểm Kho Chi Tiết CSS */
+
+.kiemkhochitiet-container {
+  padding: 24px;
+  font-family: Arial, sans-serif;
+}
+
+.kiemkhochitiet-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.kiemkhochitiet-search input {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.group-btn {
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 300px;
+}
+
+.kiemkhochitiet-table-section {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.kiemkhochitiet-table {
+  width: 65%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.kiemkhochitiet-table th,
+.kiemkhochitiet-table td {
+  border: 1px solid #ccc;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.kiemkhochitiet-table th {
+  background-color: #a1d0ff;
+  font-weight: bold;
+}
+
+.kiemkhochitiet-table input {
+  width: 80px;
+  padding: 6px;
+}
+
+.kiemkhochitiet-info {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kiemkhochitiet-info label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.kiemkhochitiet-info input,
+.kiemkhochitiet-info select,
+.kiemkhochitiet-info textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.kiemkhochitiet-buttons {
+  margin-top: 32px;
+  display: flex;
+  gap: 12px;
+}
+
+.kiemkhochitiet-buttons .draft,
+.kiemkhochitiet-buttons .submit {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.kiemkhochitiet-buttons .draft {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.kiemkhochitiet-buttons .submit {
+  background-color: #28a745;
+  color: white;
+}

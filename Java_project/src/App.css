@@ -1,42 +1,228 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+.root {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.full-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f4f6f8;
+  overflow-y: auto;
+}
+
+/* Navbar CSS */
+
+/* NavLink thường */
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Hover hoặc active */
+.nav-link:hover,
+.nav-link.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Dropdown container (gồm cả label và submenu) */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown label (giống nav-link nhưng không phải NavLink) */
+.dropdown>span {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  color: #333;
+}
+
+/* Hover effect cho dropdown label */
+.dropdown:hover>span {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Dropdown content - submenu */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  z-index: 1000;
+  padding: 8px 0;
+  pointer-events: auto;
+  /* đảm bảo không bị mất hover */
+}
+
+/* Hiện submenu khi hover vùng dropdown (kể cả label hoặc menu con) */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Mục trong dropdown */
+.dropdown-item {
+  display: block;
+  padding: 8px 16px;
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Hover submenu item */
+.dropdown-item:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Header CSS */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 10px 20px;
+  height: 60px;
+}
+
+.topbar-left {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.topbar-right .login-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tong-quan {
+
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 0;
+  background-color: #f9fafb;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+.cot-trai,
+.cot-phai {
+  flex: 1;
+  max-width: 600px;
+  /* hoặc rộng hơn nếu bạn muốn */
+}
+
+.thong-ke-box,
+.bieu-do-box {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Hộp kết quả bán hàng */
+
+
+.thong-ke-box h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #343a40;
+}
+
+/* Container cho 2 ô */
+.thong-ke-noi-dung {
+  display: flex;
+  gap: 40px;
+  justify-content: space-between;
+}
+
+/* Mỗi ô trong kết quả */
+.item {
+  flex: 1;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
   text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.item p {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0 0 8px 0;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.item h3 {
+  font-size: 28px;
+  color: #212529;
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Hộp biểu đồ doanh số */
+
+
+.bieu-do-box h2 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #343a40;
 }
 
-.card {
-  padding: 2em;
+.bieu-do-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 
-.read-the-docs {
-  color: #888;
+.bieu-do-header h2 {
+  font-size: 18px;
+  color: #343a40;
+  margin: 0;
+}
+
+.tong-doanh-thu-inline {
+  font-size: 16px;
+  color: #212529;
+}
+
+.tong-doanh-thu-inline strong {
+  color: #007bff;
 }

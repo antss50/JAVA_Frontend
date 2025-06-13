@@ -4,6 +4,7 @@ import './App.css'
 import Home from './page/Home';
 import Customer from './page/doitac/Customer';
 import Provider from './page/doitac/Provider';
+import CategoryList from './page/hanghoa/CategoryList';
 import ProductList from './page/hanghoa/ProductList';
 import InventoryChecking from './page/hanghoa/InventoryChecking'
 import Invoice from './page/giaodich/Invoice';
@@ -14,7 +15,7 @@ import CancelProduct from './page/giaodich/CancelProduct';
 import DailyReport from './page/baocao/DailyReport';
 import ProductReport from './page/baocao/ProductReport';
 import ProductAnalyze from './page/phantich/ProductAnalyze';
-import SaleAnalyze from './page/phantich/ProductAnalyze';
+import SaleAnalyze from './page/phantich/SaleAnalyze';
 function App() {
 
   return (
@@ -22,7 +23,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/hang-hoa/danh-muc" element={<ProductList />} />
+        <Route path="/hang-hoa/danh-muc" element={<CategoryList />} />
+        <Route path="/hang-hoa/san-pham" element={<ProductList />} />
         <Route path="/hang-hoa/kiem-kho" element={<InventoryChecking />} />
         <Route path="/giao-dich/hoa-don" element={<Invoice />} />
         <Route path="/giao-dich/tra-hang" element={<ReturnProduct />} />

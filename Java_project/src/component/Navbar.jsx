@@ -17,6 +17,9 @@ const Navbar = () => {
           <NavLink to="/hang-hoa/danh-muc" className="dropdown-item">
             Danh mục
           </NavLink>
+          <NavLink to="/hang-hoa/san-pham" className="dropdown-item">
+            Sản Phẩm
+          </NavLink>
           <NavLink to="/hang-hoa/kiem-kho" className="dropdown-item">
             Kiểm kho
           </NavLink>

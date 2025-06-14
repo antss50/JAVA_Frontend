@@ -5,21 +5,17 @@ import { useState, useEffect } from "react";
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
+    const [editProductId, setEditProductId] = useState(null);
     const [categories, setCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const initialProduct = {
         categoryId: "",
-        sku: "",
         name: "",
         unit: "",
         purchasePrice: 0,
         sellingPrice: 0,
-        vatRate: 0,
-        isActive: true,
-        quantityInStock: 0,
-        reorderLevel: 0
     };
-
+    
     const [newProduct, setNewProduct] = useState(initialProduct);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -29,7 +25,7 @@ const ProductList = () => {
             try {
                 const response = await fetch(`http://localhost:8080/api/inventory/products`, {
                     headers: {
-                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                         'Content-Type': 'application/json'
                     },
                     method: 'GET'
@@ -53,7 +49,7 @@ const ProductList = () => {
             try {
                 const response = await fetch(`http://localhost:8080/api/inventory/categories`, {
                     headers: {
-                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                         'Content-Type': 'application/json'
                     },
                     method: 'GET'
@@ -72,28 +68,28 @@ const ProductList = () => {
         fetchCategories();
     }, []);
 
-    // const handleSearch = async (name, SKU) => {
-    //     setLoading(true);
-    //     try {
-    //         const response = await fetch(`http://localhost:8080/api/inventory/categories/search?name=${encodeURIComponent(name)}`, {
-    //             headers: {
-    //                 Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
-    //                 'Content-Type': 'application/json'
-    //             }
-    //         });
+    const handleSearch = async (name) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`http://localhost:8080/api/inventory/products/search?query=${encodeURIComponent(name)}`, {
+                headers: {
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-    //         if (response.ok) {
-    //             const result = await response.json();
-    //             setCategories(result.content || result);
-    //         } else {
-    //             console.error('Failed to search categories. Status:', response.status);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error searching categories:', error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+            if (response.ok) {
+                const result = await response.json();
+                setProducts(result.content || result);
+            } else {
+                console.error('Failed to search product. Status:', response.status);
+            }
+        } catch (error) {
+            console.error('Error searching product:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     const handleNewProduct = async () => {
@@ -105,7 +101,7 @@ const ProductList = () => {
             const response = await fetch(`http://localhost:8080/api/inventory/products`, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
@@ -114,16 +110,8 @@ const ProductList = () => {
             if (response.ok || response.status === 201) {
                 const result = await response.json();
                 const category = categories.find(cat => cat.id === result.categoryId);
-                const fullProduct = {
-                    ...result,
-                    buyPrice: result.purchasePrice,
-                    sellPrice: result.sellingPrice,
-                    quantityInStock: result.quantityInStock || 0,
-                    category,
-                };
 
-                console.log("Tạo sản phẩm thành công!", fullProduct);
-                setProducts((prev) => [...prev, fullProduct]);
+                setProducts((prev) => [...prev, result]);
                 setShowCreateModal(false);
                 setNewProduct(initialProduct);
             } else {
@@ -140,7 +128,7 @@ const ProductList = () => {
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/products/${productId}`, {
                 headers: {
-                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                     'Content-Type': 'application/json'
                 },
                 method: 'DELETE'
@@ -157,6 +145,44 @@ const ProductList = () => {
             setLoading(false);
         }
     }
+
+    const handleEditProduct = async (productId) => {
+        const updatedProduct = {
+            categoryId: newProduct.categoryId,
+            name: newProduct.name,
+            unit: newProduct.unit,
+            purchasePrice: newProduct.purchasePrice,
+            sellingPrice: newProduct.sellingPrice,
+        };
+        console.log("Dữ liệu gửi cập nhật:", updatedProduct);
+        console.log("productId:", productId)
+        try {
+            const response = await fetch(`http://localhost:8080/api/inventory/products/${productId}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedProduct)
+            });
+
+            if (!response.ok) {
+                throw new Error("Cập nhật thất bại");
+            }
+
+            const updated = await response.json();
+
+
+            setProducts(products.map(p => p.id === productId ? updated : p));
+            setShowCreateModal(false);
+            setNewProduct(initialProduct);
+            setEditProductId(null);
+        } catch (error) {
+            console.error("Lỗi cập nhật:", error);
+
+        }
+    };
+
     return (
         <div className="full-container">
             <Header></Header>
@@ -168,12 +194,12 @@ const ProductList = () => {
                         type="text"
                         placeholder="Nhập tên sản phẩm"
                         className="kiemkho-input text-black"
-                    // value={searchTerm}
-                    //     onChange={(e) => {
-                    //         const value = e.target.value;
-                    //         setSearchTerm(value);
-                    //         handleSearch(value);
-                    //     }}
+                        value={searchTerm}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setSearchTerm(value);
+                            handleSearch(value);
+                        }}
                     />
                 </form>
 
@@ -197,15 +223,6 @@ const ProductList = () => {
                                         <button className="btn-close" onClick={() => setShowCreateModal(false)} />
                                     </div>
                                     <div className="modal-body">
-                                        <div className="mb-3">
-                                            <label className="form-label">Mã Sản Phẩm</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={newProduct.sku}
-                                                onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                                            />
-                                        </div>
                                         <div className="mb-3">
                                             <label className="form-label">Tên Sản Phẩm</label>
                                             <input
@@ -265,11 +282,21 @@ const ProductList = () => {
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => {
+                                                setShowCreateModal(false);
+                                                setEditProductId(null);
+                                                setNewProduct(initialProduct);
+                                            }}
+                                        >
                                             Hủy
                                         </button>
-                                        <button className="btn btn-primary" onClick={handleNewProduct}>
-                                            Tạo
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={editProductId ? () => handleEditProduct(editProductId) : handleNewProduct}
+                                        >
+                                            {editProductId ? "Lưu" : "Tạo"}
                                         </button>
                                     </div>
                                 </div>
@@ -281,27 +308,45 @@ const ProductList = () => {
                         <thead>
                             <tr>
                                 <th>Id</th>
-                                <th>Mã Sản Phẩm</th>
                                 <th>Tên Sản Phẩm</th>
                                 <th>Phân Loại</th>
                                 <th>Đơn Vị</th>
                                 <th>Giá Nhập</th>
                                 <th>Giá Bán</th>
-                                <th>Tồn Kho</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             {products.map((product) => (
                                 <tr key={product.id}>
                                     <td>{product.id}</td>
-                                    <td>{product.sku}</td>
                                     <td>{product.name}</td>
-                                    <td>{product.category.name}</td>
+                                    <td>{product.categoryName}</td>
                                     <td>{product.unit}</td>
-                                    <td>{product.buyPrice}</td>
-                                    <td>{product.sellPrice}</td>
-                                    <td>{product.quantityInStock}</td>
-                                    <td><button className="btn btn-danger" onClick={() => handleDeteleProduct(product.id)}>Xoá</button></td>
+                                    <td>{product.purchasePrice}</td>
+                                    <td>{product.sellingPrice}</td>
+                                    <td>
+                                        <button className="btn btn-danger fs-5 p-0 px-2" onClick={() => handleDeteleProduct(product.id)}>🗑︎</button>
+                                        <button
+                                            className="btn fw-bold"
+                                            onClick={() => {
+                                                console.log("🔍 Product cần cập nhật:", product);
+                                                console.log("📦 Category của sản phẩm:", product.category);
+                                                setEditProductId(product.id);
+                                                setNewProduct({
+                                                    categoryId: product.categoryId,
+                                                    name: product.name,
+                                                    unit: product.unit,
+                                                    purchasePrice: product.purchasePrice,
+                                                    sellingPrice: product.sellingPrice,
+                                                });
+                                                setShowCreateModal(true);
+                                            }}
+                                        >
+                                            Cập Nhật
+                                        </button>
+
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

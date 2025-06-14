@@ -20,7 +20,7 @@ const CategoryList = () => {
             try {
                 const response = await fetch(`http://localhost:8080/api/inventory/categories`, {
                     headers: {
-                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                         'Content-Type': 'application/json'
                     },
                     method: 'GET'
@@ -44,7 +44,7 @@ const CategoryList = () => {
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/categories/${categoryId}/products`, {
                 headers: {
-                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -71,7 +71,7 @@ const CategoryList = () => {
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/categories/search?name=${encodeURIComponent(name)}`, {
                 headers: {
-                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -104,7 +104,7 @@ const CategoryList = () => {
             const response = await fetch(`http://localhost:8080/api/inventory/categories`, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODAwNjAzLCJleHAiOjE3NDk4ODcwMDN9.Y_hR2gezGc7wYOmGGLnK5i8G0wg2c4NZgNMbDFb_W7Ge6KQ8FFEhhZBXHeAlOmei`,
+                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)

@@ -1,7 +1,6 @@
 .root {
-  margin: 0;
-  width: 100vw;
-  height: 100vh;
+   width: 100vw;
+   height: 100vh;
 }
 
 .full-container {
@@ -61,7 +60,7 @@
 }
 
 /* Hover effect cho dropdown label */
-.dropdown:hover>span {
+.dropdown:hover>span, span:hover {
   background-color: #007bff;
   color: white;
 }
@@ -225,4 +224,51 @@
 
 .tong-doanh-thu-inline strong {
   color: #007bff;
+}
+
+/* Trang nhận order */
+.sale-analyze-container {
+  width: 100%;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  gap: 5%;
+}
+
+.sale-analyze-left {
+  flex: 3; /* 2 phần chia cho bảng */
+  overflow-x: auto;
+}
+
+.sale-analyze-right {
+  flex: 1.2; /* 1.2 phần chia cho form */
+  background-color: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  min-width: 380px;
+}
+
+.sale-analyze-product {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #ccc;
+  padding: 8px 0;
+}
+
+.sale-analyze-product input {
+  width: 60px;
+}
+
+.sale-analyze-total {
+  text-align: right;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-top: 10px;
+}
+
+.sale-analyze-create-btn {
+  width: 100%;
+  margin-top: 20px;
 }

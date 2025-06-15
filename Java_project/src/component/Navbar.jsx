@@ -7,7 +7,7 @@ const Navbar = () => {
     <nav className="navbar d-flex justify-content-around mb-4">
       {/* Tổng quan không submenu */}
       <NavLink to="/home" className="nav-link p-2">
-        Tổng quan
+        <span style={{fontWeight: '500'}}>Tổng Quan</span>
       </NavLink>
 
       {/* Hàng hoá */}
@@ -75,17 +75,9 @@ const Navbar = () => {
       </div>
 
       {/* Phân tích */}
-      <div className="nav-link dropdown">
-        <span>Phân tích</span>
-        <div className="dropdown-content">
-          <NavLink to="/phan-tich/ban-hang" className="dropdown-item">
-            Bán hàng
-          </NavLink>
-          <NavLink to="/phan-tich/hang-hoa" className="dropdown-item">
-            Hàng hoá
-          </NavLink>
-        </div>
-      </div>
+       <NavLink to="/ban-hang" className="nav-link p-2">
+        <span style={{fontWeight: '500'}}>Nhận Đơn</span>
+      </NavLink>
     </nav>
   );
 };

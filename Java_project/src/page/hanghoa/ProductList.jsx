@@ -2,6 +2,7 @@ import Header from "../../component/Header";
 import Navbar from "../../component/Navbar";
 import "./product.css";
 import { useState, useEffect } from "react";
+import ToastMessage from "../../component/ToastMessage";
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
@@ -14,11 +15,17 @@ const ProductList = () => {
         unit: "",
         purchasePrice: 0,
         sellingPrice: 0,
+        reorderLevel: 0
     };
-    
+
     const [newProduct, setNewProduct] = useState(initialProduct);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+
+    // ✅ Toast state
+    const [toastShow, setToastShow] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastVariant, setToastVariant] = useState("success");
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -110,12 +117,13 @@ const ProductList = () => {
             if (response.ok || response.status === 201) {
                 const result = await response.json();
                 const category = categories.find(cat => cat.id === result.categoryId);
-
+                showToast("Tạo sản phẩm thành công!", "success");
                 setProducts((prev) => [...prev, result]);
                 setShowCreateModal(false);
                 setNewProduct(initialProduct);
             } else {
                 console.log("Tạo không thành công. Status: " + response.status);
+                showToast(`Tạo sản phẩm thất bại: ${errorData.message}`, "danger");
             }
         } catch (error) {
             console.error('Error creating product:', error);
@@ -134,10 +142,11 @@ const ProductList = () => {
                 method: 'DELETE'
             });
             if (response.ok) {
-
                 setProducts((prev) => prev.filter(p => p.id !== productId));
+                showToast("Xoá sản phẩm thành công!", "success");
             } else {
                 console.error('Xoá không thành công. Status:', response.status);
+                showToast(`Xoá sản phẩm thất bại: ${errorData.message}`, "danger");
             }
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -153,6 +162,7 @@ const ProductList = () => {
             unit: newProduct.unit,
             purchasePrice: newProduct.purchasePrice,
             sellingPrice: newProduct.sellingPrice,
+            reorderLevel: newProduct.reorderLevel
         };
         console.log("Dữ liệu gửi cập nhật:", updatedProduct);
         console.log("productId:", productId)
@@ -167,7 +177,7 @@ const ProductList = () => {
             });
 
             if (!response.ok) {
-                throw new Error("Cập nhật thất bại");
+                showToast(`Cập nhật sản phẩm thất bại: ${errorData.message}`, "danger");
             }
 
             const updated = await response.json();
@@ -175,12 +185,19 @@ const ProductList = () => {
 
             setProducts(products.map(p => p.id === productId ? updated : p));
             setShowCreateModal(false);
+            showToast("Cập nhật sản phẩm thành công!", "success");
             setNewProduct(initialProduct);
             setEditProductId(null);
         } catch (error) {
             console.error("Lỗi cập nhật:", error);
 
         }
+    };
+
+    const showToast = (message, variant = "success") => {
+        setToastMessage(message);
+        setToastVariant(variant);
+        setToastShow(true);
     };
 
     return (
@@ -216,7 +233,7 @@ const ProductList = () => {
 
                     {showCreateModal && (
                         <div className="modal show fade d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-                            <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "95vw" }}>
                                 <div className="modal-content">
                                     <div className="modal-header">
                                         <h5 className="modal-title">Tạo Sản Phẩm Mới</h5>
@@ -330,8 +347,6 @@ const ProductList = () => {
                                         <button
                                             className="btn fw-bold"
                                             onClick={() => {
-                                                console.log("🔍 Product cần cập nhật:", product);
-                                                console.log("📦 Category của sản phẩm:", product.category);
                                                 setEditProductId(product.id);
                                                 setNewProduct({
                                                     categoryId: product.categoryId,
@@ -353,6 +368,12 @@ const ProductList = () => {
                     </table>
                 </div>
             </div>
+            <ToastMessage
+                show={toastShow}
+                onClose={() => setToastShow(false)}
+                message={toastMessage}
+                variant={toastVariant}
+            />
         </div>
     );
 }

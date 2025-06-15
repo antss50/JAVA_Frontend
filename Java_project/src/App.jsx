@@ -35,8 +35,7 @@ function App() {
         <Route path="/doi-tac/nha-cung-cap" element={<Provider />} />
         <Route path="/bao-cao/cuoi-ngay" element={<DailyReport />} />
         <Route path="/bao-cao/hang-hoa" element={<ProductReport />} />
-        <Route path="/phan-tich/ban-hang" element={<SaleAnalyze />} />
-        <Route path="/phan-tich/hang-hoa" element={<ProductAnalyze />} />
+        <Route path="/ban-hang" element={<SaleAnalyze />} />
       </Routes>
     </Router>
   )

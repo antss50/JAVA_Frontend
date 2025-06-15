@@ -2,6 +2,8 @@ import Header from "../../component/Header";
 import Navbar from "../../component/Navbar";
 import "./product.css";
 import { useState, useEffect } from "react";
+import ToastMessage from "../../component/ToastMessage";
+
 const CategoryList = () => {
     const [categories, setCategories] = useState([]);
     const [categoryDetails, setCategoryDetails] = useState([]);
@@ -14,6 +16,17 @@ const CategoryList = () => {
         description: "",
         Id: ""
     });
+
+    // ✅ Toast state
+    const [toastShow, setToastShow] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastVariant, setToastVariant] = useState("success");
+
+    const showToast = (message, variant = "success") => {
+        setToastMessage(message);
+        setToastVariant(variant);
+        setToastShow(true);
+    };
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -113,11 +126,13 @@ const CategoryList = () => {
             if (response.ok || response.status === 201) {
                 const result = await response.json();
                 console.log("Tạo danh mục thành công!");
+                showToast("Tạo danh mục thành công!", "success")
                 setCategories((prev) => [...prev, result]);
                 setShowCreateModal(false); // đóng modal sau khi tạo
                 setNewCategory({ name: "", description: "", parentId: "" }); // reset form
             } else {
                 console.log("Tạo không thành công. Status: " + response.status);
+                showToast(`Tạo danh mục thất bại: ${errorData.message}`, "danger");
             }
         } catch (error) {
             console.error('Error creating category:', error);
@@ -160,7 +175,7 @@ const CategoryList = () => {
 
                         {showCreateModal && (
                             <div className="modal show fade d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-                                <div className="modal-dialog modal-dialog-centered">
+                                <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "95vw" }}>
                                     <div className="modal-content">
                                         <div className="modal-header">
                                             <h5 className="modal-title">Tạo Danh Mục Mới</h5>
@@ -234,7 +249,7 @@ const CategoryList = () => {
 
             {show && categoryDetails && (
                 <div className="modal show fade d-block fs-5" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                    <div className="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div className="modal-dialog modal-lg modal-dialog-centered" role="document" style={{ maxWidth: "95vw" }}>
                         <div className="modal-content shadow-lg">
                             <div className="modal-header">
                                 <h5 className="modal-title">Danh sách sản phẩm</h5>
@@ -247,29 +262,21 @@ const CategoryList = () => {
                                     <table className="table table-bordered table-hover">
                                         <thead className="table-light">
                                             <tr>
-                                                <th>SKU</th>
+                                                <th>Id</th>
                                                 <th>Tên sản phẩm</th>
                                                 <th>Đơn vị</th>
+                                                <th>Giá Nhập</th>
                                                 <th>Giá bán</th>
-                                                <th>Tồn kho</th>
-                                                <th>Trạng thái</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {categoryDetails.map((product) => (
                                                 <tr key={product.id}>
-                                                    <td>{product.sku}</td>
+                                                    <td>{product.id}</td>
                                                     <td>{product.name}</td>
                                                     <td>{product.unit}</td>
+                                                    <td>{product.purchasePrice}</td>
                                                     <td>{product.sellingPrice}</td>
-                                                    <td>{product.quantityInStock}</td>
-                                                    <td>
-                                                        {(product.isActive && product.quantityInStock > 0) ? (
-                                                            <span className="badge bg-success">Còn Hàng</span>
-                                                        ) : (
-                                                            <span className="badge bg-secondary">Hết Hàng</span>
-                                                        )}
-                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -285,7 +292,12 @@ const CategoryList = () => {
                     </div>
                 </div>
             )}
-
+            <ToastMessage
+                show={toastShow}
+                onClose={() => setToastShow(false)}
+                message={toastMessage}
+                variant={toastVariant}
+            />
 
         </>
     );

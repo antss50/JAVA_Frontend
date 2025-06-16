@@ -1,11 +1,8 @@
 import "./transaction.css"
-import Header from "../../component/Header";
-import Navbar from "../../component/Navbar";
+
 const ImportProduct = () => {
     return (
         <div className="nhaphang-container full-container">
-            <Header></Header>
-            <Navbar></Navbar>
             <div className="nhaphang-search-box">
                 <h4>Tìm kiếm</h4>
                 <input

@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css'
+import Layout from './components/layout/Layout';
 import Home from './page/Home';
 import Customer from './page/doitac/Customer';
 import Provider from './page/doitac/Provider';
@@ -16,27 +16,29 @@ import DailyReport from './page/baocao/DailyReport';
 import ProductReport from './page/baocao/ProductReport';
 import ProductAnalyze from './page/phantich/ProductAnalyze';
 import SaleAnalyze from './page/phantich/SaleAnalyze';
-function App() {
 
+function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/home" />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/hang-hoa/danh-muc" element={<CategoryList />} />
-        <Route path="/hang-hoa/san-pham" element={<ProductList />} />
-        <Route path="/hang-hoa/kiem-kho" element={<InventoryChecking />} />
-        <Route path="/giao-dich/hoa-don" element={<Invoice />} />
-        <Route path="/giao-dich/tra-hang" element={<ReturnProduct />} />
-        <Route path="/giao-dich/nhap-hang" element={<ImportProduct />} />
-        <Route path="/giao-dich/tra-hang-nhap" element={<ReturnImportedProduct />} />
-        <Route path="/giao-dich/xuat-huy" element={<CancelProduct />} />
-        <Route path="/doi-tac/khach-hang" element={<Customer />} />
-        <Route path="/doi-tac/nha-cung-cap" element={<Provider />} />
-        <Route path="/bao-cao/cuoi-ngay" element={<DailyReport />} />
-        <Route path="/bao-cao/hang-hoa" element={<ProductReport />} />
-        <Route path="/ban-hang" element={<SaleAnalyze />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/home" />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/hang-hoa/danh-muc" element={<CategoryList />} />
+          <Route path="/hang-hoa/san-pham" element={<ProductList />} />
+          <Route path="/hang-hoa/kiem-kho" element={<InventoryChecking />} />
+          <Route path="/giao-dich/hoa-don" element={<Invoice />} />
+          <Route path="/giao-dich/tra-hang" element={<ReturnProduct />} />
+          <Route path="/giao-dich/nhap-hang" element={<ImportProduct />} />
+          <Route path="/giao-dich/tra-hang-nhap" element={<ReturnImportedProduct />} />
+          <Route path="/giao-dich/xuat-huy" element={<CancelProduct />} />
+          <Route path="/doi-tac/khach-hang" element={<Customer />} />
+          <Route path="/doi-tac/nha-cung-cap" element={<Provider />} />
+          <Route path="/bao-cao/cuoi-ngay" element={<DailyReport />} />
+          <Route path="/bao-cao/hang-hoa" element={<ProductReport />} />
+          <Route path="/ban-hang" element={<SaleAnalyze />} />
+        </Routes>
+      </Layout>
     </Router>
   )
 }

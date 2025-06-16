@@ -1,5 +1,3 @@
-import Header from "../../component/Header";
-import Navbar from "../../component/Navbar";
 import { useState, useEffect } from "react";
 import ToastMessage from "../../component/ToastMessage";
 import "../../App.css";
@@ -8,6 +6,8 @@ const SaleAnalyze = () => {
     const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [customerId, setCustomerId] = useState("");
+    const [customerName, setCustomerName] = useState("");
+    const [customerPhone, setCustomerPhone] = useState("");
 
     // ✅ Toast state
     const [toastShow, setToastShow] = useState(false);
@@ -56,6 +56,54 @@ const SaleAnalyze = () => {
         });
     };
 
+    const getOrCreateCustomerId = async () => {
+        try {
+            // 1. Lấy danh sách tất cả parties
+            const res = await fetch("http://localhost:8080/api/parties", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const parties = await res.json();
+
+            // 2. Kiểm tra khách hàng có tồn tại không (lọc bằng name + phone)
+            const existing = parties.find(
+                p => p.name === customerName && p.phone === customerPhone && p.partyType === "CUSTOMER"
+            );
+
+            if (existing) {
+                return existing.id; // Khách hàng đã tồn tại
+            }
+
+            // 3. Tạo khách hàng mới
+            const createRes = await fetch("http://localhost:8080/api/parties", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: customerName,
+                    phone: customerPhone,
+                    partyType: "CUSTOMER",
+                    active: true
+                })
+            });
+
+            if (!createRes.ok) {
+                const error = await createRes.json();
+                throw new Error(error.message || "Không thể tạo khách hàng");
+            }
+
+            const newParty = await createRes.json();
+            return newParty.id;
+        } catch (err) {
+            showToast(`Lỗi khách hàng: ${err.message}`, "danger");
+            throw err;
+        }
+    };
+
+
     const handleQuantityChange = (productId, quantity) => {
         setSelectedProducts(prev =>
             prev.map(p =>
@@ -74,18 +122,21 @@ const SaleAnalyze = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const payload = {
-            customerId: parseInt(customerId), // đảm bảo đúng kiểu số
-            saleTimestamp: new Date().toISOString(), // thời gian hiện tại ISO format
-            orderLines: selectedProducts.map(p => ({
-                productId: p.productId,
-                quantity: p.quantity,
-                unitPrice: p.unitPrice,
-                lineTotal: parseFloat((p.quantity * p.sellingPrice).toFixed(2)),
-            })),
-        };
 
         try {
+            const customerId = await getOrCreateCustomerId();
+
+            const payload = {
+                customerId: customerId,
+                saleTimestamp: new Date().toISOString(),
+                orderLines: selectedProducts.map(p => ({
+                    productId: p.productId,
+                    quantity: p.quantity,
+                    unitPrice: p.unitPrice,
+                    lineTotal: parseFloat((p.quantity * p.unitPrice).toFixed(2)),
+                })),
+            };
+
             const response = await fetch('http://localhost:8080/api/sales/orders', {
                 method: 'POST',
                 headers: {
@@ -99,29 +150,26 @@ const SaleAnalyze = () => {
                 const data = await response.json();
                 showToast("Tạo đơn hàng thành công!", "success");
                 setSelectedProducts([]);
-                setCustomerId("");
-                console.log(data);
+                setCustomerName("");
+                setCustomerPhone("");
             } else {
                 const errorData = await response.json();
-                console.error('Tạo đơn hàng thất bại:', errorData);
                 showToast(`Tạo đơn hàng thất bại: ${errorData.message}`, "danger");
             }
         } catch (err) {
-            console.error('Lỗi khi gửi đơn hàng:', err);
-            alert('Lỗi khi gửi đơn hàng!');
+            console.error(err);
         }
     };
+
 
     const totalAmount = selectedProducts.reduce((sum, p) => sum + p.lineTotal, 0);
 
     return (
         <div className="full-container">
-            <Header />
-            <Navbar />
-            <div className="d-flex">
-                <div className="sale-analyze-container d-flex flex-wrap flex-md-nowrap gap-4">
-                    <div className="sale-analyze-left rounded-2 flex-fill">
-                        <table className="table table-bordered table-hover">
+            <div className="sale-analyze-container d-flex flex-wrap flex-md-nowrap gap-4">
+                <div className="left-container">
+                    <div className="sale-analyze-left rounded-2">
+                        <table className="kiemkho-table">
                             <thead className="table-primary">
                                 <tr>
                                     <th>Id</th>
@@ -152,47 +200,58 @@ const SaleAnalyze = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div className="sale-analyze-right p-5 flex-fill w-25">
+                    <form onSubmit={handleSubmit} className="form" style={{ maxHeight: '80vh' }}>
+                        <div className="mb-3">
+                            <label className="form-label">Tên Khách Hàng:</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={customerName}
+                                onChange={(e) => setCustomerName(e.target.value)}
+                                placeholder="Nhập mã khách hàng"
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Số điện thoại:</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={customerPhone}
+                                onChange={(e) => setCustomerPhone(e.target.value)}
+                                placeholder="Nhập số điện thoại"
+                                required
+                            />
+                        </div>
 
-                    <div className="sale-analyze-right p-5 flex-fill w-25">
-                        <form onSubmit={handleSubmit} className="form" style={{maxHeight: '80vh'}}>
-                            <div className="mb-3">
-                                <label className="form-label">Mã Khách Hàng:</label>
+                        <h6 className="fw-bold">Sản Phẩm Đã Chọn:</h6>
+                        {selectedProducts.map((item) => (
+                            <div key={item.productId} className="sale-analyze-product">
+                                <span>{item.productName}</span>
                                 <input
-                                    type="text"
+                                    type="number"
+                                    min="1"
+                                    value={item.quantity}
+                                    onChange={(e) => handleQuantityChange(item.productId, parseFloat(e.target.value))}
                                     className="form-control"
-                                    value={customerId}
-                                    onChange={(e) => setCustomerId(e.target.value)}
-                                    placeholder="Nhập mã khách hàng"
-                                    required
                                 />
+                                <span>{item.lineTotal.toLocaleString()}đ</span>
                             </div>
+                        ))}
 
-                            <h6 className="fw-bold">Sản Phẩm Đã Chọn:</h6>
-                            {selectedProducts.map((item) => (
-                                <div key={item.productId} className="sale-analyze-product">
-                                    <span>{item.productName}</span>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={item.quantity}
-                                        onChange={(e) => handleQuantityChange(item.productId, parseFloat(e.target.value))}
-                                        className="form-control"
-                                    />
-                                    <span>{item.lineTotal.toLocaleString()}đ</span>
-                                </div>
-                            ))}
+                        <div className="sale-analyze-total">
+                            Tổng tiền: {totalAmount.toLocaleString()}đ
+                        </div>
 
-                            <div className="sale-analyze-total">
-                                Tổng tiền: {totalAmount.toLocaleString()}đ
-                            </div>
-
-                            <button type="submit" className="btn btn-success sale-analyze-create-btn">
-                                Tạo
-                            </button>
-                        </form>
-                    </div>
+                        <button type="submit" className="btn btn-success sale-analyze-create-btn">
+                            Tạo
+                        </button>
+                    </form>
                 </div>
             </div>
+
             <ToastMessage
                 show={toastShow}
                 onClose={() => setToastShow(false)}

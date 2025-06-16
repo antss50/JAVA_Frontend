@@ -1,12 +1,8 @@
 import React from "react";
 import "./Provider.css";
-import Header from "../../component/Header";
-import Navbar from "../../component/Navbar";
-const Provider = ()  => {
+const Provider = () => {
   return (
     <div className="ncc-container full-container">
-      <Header></Header>
-      <Navbar></Navbar>
       <div className="ncc-search-box">
         <h4>Tìm kiếm</h4>
         <input

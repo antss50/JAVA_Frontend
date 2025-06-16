@@ -1,31 +1,49 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import '../App.css';
-import Header from '../component/Header';
-import Navbar from '../component/Navbar';
-const Home = () => {
-    const soDonHang = 35;
-    const doanhThu = 12500000;
 
-    const data = [
-        { hour: '08:00', revenue: 500000 },
-        { hour: '09:00', revenue: 800000 },
-        { hour: '10:00', revenue: 600000 },
-        { hour: '11:00', revenue: 1000000 },
-        { hour: '12:00', revenue: 1200000 },
-        { hour: '13:00', revenue: 950000 },
-        { hour: '14:00', revenue: 400000 },
-        { hour: '15:00', revenue: 300000 },
-        { hour: '16:00', revenue: 700000 },
-        { hour: '17:00', revenue: 900000 },
-    ];
+const Home = () => {
+    const [doanhThu, setDoanhThu] = useState(0);
+    const [soDonHang, setSoDonHang] = useState(0);
+    const [productSalesChart, setProductSalesChart] = useState([]);
+    useEffect(() => {
+        const fetchDailySalesReport = async () => {
+            try {
+                const response = await fetch("http://localhost:8080/api/sales/reports/product-sales?page=0&size=10&sort=reportDate,desc", {
+                    headers: {
+                        Authorization: `Bearer <token>` // thay bằng token thật
+                    }
+                });
+
+                const result = await response.json();
+                const todayStr = new Date().toISOString().slice(0, 10);
+
+                const todayReport = (result.content || []).find(
+                    report => report.reportDate === todayStr && report.reportPeriod === "DAILY"
+                );
+
+                if (todayReport) {
+                    setDoanhThu(todayReport.totalSalesAmount || 0);
+                    setSoDonHang(todayReport.totalOrdersCount || 0);
+                    setProductSalesChart(todayReport.productSales || []);
+                } else {
+                    setDoanhThu(0);
+                    setSoDonHang(0);
+                }
+            } catch (error) {
+                console.error("Lỗi khi gọi API báo cáo doanh thu:", error);
+            }
+        };
+
+        fetchDailySalesReport();
+    }, []);
+
 
     return (
         <div className="tong-quan full-container">
-            <Header></Header>
-            <Navbar></Navbar>
             <div>
                 {/* Hộp 1: Kết quả bán hàng */}
                 <div className="thong-ke-box">
@@ -54,12 +72,12 @@ const Home = () => {
                     </div>
 
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={data}>
+                        <BarChart data={productSalesChart}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="hour" />
-                            <YAxis tickFormatter={(value) => `${value / 1000}k`} />
+                            <XAxis dataKey="productName" tick={{ fontSize: 12 }} />
+                            <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
                             <Tooltip formatter={(value) => `${value.toLocaleString('vi-VN')}₫`} />
-                            <Bar dataKey="revenue" fill="#007bff" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="salesAmount" fill="#007bff" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

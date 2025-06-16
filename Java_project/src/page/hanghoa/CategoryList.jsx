@@ -1,5 +1,3 @@
-import Header from "../../component/Header";
-import Navbar from "../../component/Navbar";
 import "./product.css";
 import { useState, useEffect } from "react";
 import ToastMessage from "../../component/ToastMessage";
@@ -144,8 +142,6 @@ const CategoryList = () => {
     return (
         <>
             <div className="full-container">
-                <Header></Header>
-                <Navbar></Navbar>
                 <div className="kiemkho-container">
                     <form className="kiemkho-search-box">
                         <h4>Tìm kiếm</h4>

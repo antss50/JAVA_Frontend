@@ -1,6 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import Header from "../../component/Header";
-import Navbar from "../../component/Navbar";
 import "./product.css";
 
 const InventoryChecking = () => {
@@ -8,8 +6,6 @@ const InventoryChecking = () => {
 
     return (
         <div className="full-container">
-            <Header></Header>
-            <Navbar></Navbar>
             <div className="kiemkho-container">
                 <div className="kiemkho-search-box">
                     <h4>Tìm kiếm</h4>

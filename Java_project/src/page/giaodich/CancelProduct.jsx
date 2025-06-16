@@ -1,12 +1,8 @@
 import "./transaction.css"
-import Header from "../../component/Header";
-import Navbar from "../../component/Navbar";
 
 const CancelProduct = () => {
     return (
         <div className="xuathuy-container full-container">
-            <Header></Header>
-            <Navbar></Navbar>
             <div className="xuathuy-search-box">
                 <h4>Tìm kiếm</h4>
                 <input

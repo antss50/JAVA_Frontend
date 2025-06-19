@@ -17,37 +17,38 @@ const ProductList = () => {
     };
 
     const [newProduct, setNewProduct] = useState(initialProduct);
-    const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const size = 20;
 
     // ✅ Toast state
     const [toastShow, setToastShow] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
     const [toastVariant, setToastVariant] = useState("success");
 
+    const token = ""
+
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchPagedProducts = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/inventory/products`, {
+                const response = await fetch(`http://localhost:8080/api/inventory/products?page=${currentPage}&size=${size}`, {
                     headers: {
-                        Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
+                        Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    method: 'GET'
+                    }
                 });
-
                 const result = await response.json();
-
                 setProducts(result.content || []);
+                setTotalPages(result.totalPages || 1);
             } catch (error) {
-                console.error('Error fetching products:', error);
-            } finally {
-                setLoading(false);
+                console.error("Lỗi khi tải trang sản phẩm:", error);
             }
         };
 
-        fetchProducts();
-    }, []);
+        fetchPagedProducts();
+    }, [currentPage]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -66,7 +67,6 @@ const ProductList = () => {
             } catch (error) {
                 console.error('Error fetching categories:', error);
             } finally {
-                setLoading(false);
             }
         };
 
@@ -74,7 +74,6 @@ const ProductList = () => {
     }, []);
 
     const handleSearch = async (name) => {
-        setLoading(true);
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/products/search?query=${encodeURIComponent(name)}`, {
                 headers: {
@@ -92,13 +91,11 @@ const ProductList = () => {
         } catch (error) {
             console.error('Error searching product:', error);
         } finally {
-            setLoading(false);
         }
     };
 
 
     const handleNewProduct = async () => {
-        setLoading(true);
 
         const payload = newProduct;
 
@@ -126,32 +123,30 @@ const ProductList = () => {
         } catch (error) {
             console.error('Error creating product:', error);
         } finally {
-            setLoading(false);
         }
     };
 
-    const handleDeteleProduct = async (productId) => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/inventory/products/${productId}`, {
-                headers: {
-                    Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
-                    'Content-Type': 'application/json'
-                },
-                method: 'DELETE'
-            });
-            if (response.ok) {
-                setProducts((prev) => prev.filter(p => p.id !== productId));
-                showToast("Xoá sản phẩm thành công!", "success");
-            } else {
-                console.error('Xoá không thành công. Status:', response.status);
-                showToast(`Xoá sản phẩm thất bại: ${errorData.message}`, "danger");
-            }
-        } catch (error) {
-            console.error('Error deleting product:', error);
-        } finally {
-            setLoading(false);
-        }
-    }
+    // const handleDeteleProduct = async (productId) => {
+    //     try {
+    //         const response = await fetch(`http://localhost:8080/api/inventory/products/${productId}`, {
+    //             headers: {
+    //                 Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
+    //                 'Content-Type': 'application/json'
+    //             },
+    //             method: 'DELETE'
+    //         });
+    //         if (response.ok) {
+    //             setProducts((prev) => prev.filter(p => p.id !== productId));
+    //             showToast("Xoá sản phẩm thành công!", "success");
+    //         } else {
+    //             console.error('Xoá không thành công. Status:', response.status);
+    //             showToast(`Xoá sản phẩm thất bại: ${errorData.message}`, "danger");
+    //         }
+    //     } catch (error) {
+    //         console.error('Error deleting product:', error);
+    //     } finally {
+    //     }
+    // }
 
     const handleEditProduct = async (productId) => {
         const updatedProduct = {
@@ -200,7 +195,7 @@ const ProductList = () => {
 
     return (
         <div className="full-container">
-            <div className="kiemkho-container">
+            <div className="kiemkho-container d-flex">
                 <form className="kiemkho-search-box">
                     <h4>Tìm kiếm</h4>
                     <input
@@ -220,7 +215,7 @@ const ProductList = () => {
                     <div className="kiemkho-header">
                         <h2 className="kiemkho-title">DANH SÁCH SẢN PHẨM</h2>
                         <button
-                            className="kiemkho-button btn btn-success p-2"
+                            className="kiemkho-button btn btn-success p-2 fw-bold"
                             onClick={() => setShowCreateModal(true)}
                         >
                             + Tạo Sản Phẩm
@@ -232,7 +227,6 @@ const ProductList = () => {
                             <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "95vw" }}>
                                 <div className="modal-content">
                                     <div className="modal-header">
-                                        <h5 className="modal-title">Tạo Sản Phẩm Mới</h5>
                                         <button className="btn-close" onClick={() => setShowCreateModal(false)} />
                                     </div>
                                     <div className="modal-body">
@@ -318,7 +312,7 @@ const ProductList = () => {
                     )}
 
                     <table className="kiemkho-table">
-                        <thead>
+                        <thead className="text-center">
                             <tr>
                                 <th>Id</th>
                                 <th>Tên Sản Phẩm</th>
@@ -336,12 +330,12 @@ const ProductList = () => {
                                     <td>{product.name}</td>
                                     <td>{product.categoryName}</td>
                                     <td>{product.unit}</td>
-                                    <td>{product.purchasePrice}</td>
-                                    <td>{product.sellingPrice}</td>
+                                    <td>{product.purchasePrice} VNĐ</td>
+                                    <td>{product.sellingPrice} VNĐ</td>
                                     <td>
-                                        <button className="btn btn-danger fs-5 p-0 px-2" onClick={() => handleDeteleProduct(product.id)}>🗑︎</button>
+                                        {/* <button className="btn btn-danger fs-5 p-0 px-2" onClick={() => handleDeteleProduct(product.id)}>🗑︎</button> */}
                                         <button
-                                            className="btn fw-bold"
+                                            className="btn btn-warning fw-bold"
                                             onClick={() => {
                                                 setEditProductId(product.id);
                                                 setNewProduct({
@@ -362,6 +356,18 @@ const ProductList = () => {
                             ))}
                         </tbody>
                     </table>
+
+                    <nav className="mt-3">
+                        <ul className="pagination justify-content-center">
+                            {[...Array(totalPages).keys()].map((page) => (
+                                <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                        {page + 1}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
                 </div>
             </div>
             <ToastMessage

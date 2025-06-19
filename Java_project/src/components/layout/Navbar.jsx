@@ -1,4 +1,3 @@
-import React from "react";
 import "../../App.css";
 import NavItem from "./NavItem";
 import DropdownMenu from "./DropdownMenu";
@@ -41,12 +40,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar d-flex justify-content-around mb-4">
+    <nav className="navbar d-flex justify-content-around mb-4 bg-light shadow-sm">
       <NavItem to="/home">Tổng Quan</NavItem>
       <DropdownMenu {...menuItems.hangHoa} />
       <DropdownMenu {...menuItems.giaoDich} />
       <DropdownMenu {...menuItems.doiTac} />
-      <DropdownMenu {...menuItems.baoCao} />
+      <NavItem to="/bao-cao">Báo Cáo</NavItem>
       <NavItem to="/ban-hang">Nhận Đơn</NavItem>
     </nav>
   );

@@ -1,52 +1,86 @@
-import React from "react";
-import "./Provider.css";
+import { useState, useEffect } from "react";
+
 const Provider = () => {
-  return (
-    <div className="ncc-container full-container">
-      <div className="ncc-search-box">
-        <h4>Tìm kiếm</h4>
-        <input
-          type="text"
-          placeholder="Nhập mã nhà cung cấp"
-          className="ncc-input"
-        />
-        <input
-          type="text"
-          placeholder="Nhập tên nhà cung cấp"
-          className="ncc-input"
-        />
-      </div>
+    const [providers, setProviders] = useState([]);
 
-      <div className="ncc-main-content">
-        <div className="ncc-header">
-          <h2 className="ncc-title">NHÀ CUNG CẤP</h2>
-          <button className="ncc-button">+ Thêm nhà cung cấp</button>
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const size = 20;
+    const token = ""
+
+    useEffect(() => {
+        const fetchProviders = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/parties/type/SUPPLIER?page=${currentPage}&size=${size}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'GET'
+                });
+
+                const result = await response.json();
+                if (Array.isArray(result)) {
+                    setProviders(result);
+                    setTotalPages(result.totalPages || 1);
+                } else {
+                    setProviders([]);
+                    console.error("Expected array from API, got:", result);
+                }
+            } catch (error) {
+                console.error('Error fetching providers:', error);
+            } finally {
+
+            }
+        };
+
+        fetchProviders();
+    }, []);
+
+    return (
+        <div className="full-container">
+            <div className="kiemkho-container">
+                <div className="kiemkho-main-content m-0 container-fluid">
+                    <div className="kiemkho-header">
+                        <h2 className="kiemkho-title">NHÀ CUNG CẤP</h2>
+                    </div>
+
+                    <table className="kiemkho-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên nhà cung cấp</th>
+                                <th>Số điện thoại</th>
+                                <th>Email</th>
+                                <th>Địa chỉ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {providers.map((provider) => (
+                                <tr key={provider.id}>
+                                    <td>{provider.id}</td>
+                                    <td>{provider.name}</td>
+                                    <td>{provider.phone}</td>
+                                    <td>{provider.email}</td>
+                                    <td>{provider.address}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <nav className="mt-3">
+                        <ul className="pagination justify-content-center">
+                            {[...Array(totalPages).keys()].map((page) => (
+                                <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                        {page + 1}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
-
-        <table className="ncc-table">
-          <thead>
-            <tr>
-              <th>Mã nhà cung cấp</th>
-              <th>Tên nhà cung cấp</th>
-              <th>Điện thoại</th>
-              <th>Email</th>
-              <th>Nợ cần trả hiện tại</th>
-              <th>Tổng mua</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>NCC001</td>
-              <td>Công ty TNHH ABC</td>
-              <td>0901234567</td>
-              <td>abc@example.com</td>
-              <td>5.000.000đ</td>
-              <td>120.000.000đ</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+    )
 }
 export default Provider;

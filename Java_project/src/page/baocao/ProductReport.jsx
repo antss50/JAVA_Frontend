@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useProductReports from "../baocao/hooks/useProductReport";
+import './ProductReport.css';
 
 const ProductReport = () => {
   // ========== CUSTOM HOOK ==========
@@ -16,10 +17,7 @@ const ProductReport = () => {
 
     // Actions
     updateFilters,
-    changePage,
     refreshData,
-    fetchReportsList,
-    fetchAnalyticsData,
 
     // Utilities
     getFormattedPeriod,
@@ -109,13 +107,6 @@ const ProductReport = () => {
   // ========== EVENT HANDLERS ==========
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-
-    // Fetch data based on tab
-    if (tab === "detailed") {
-      fetchReportsList();
-    } else if (tab === "analytics") {
-      fetchAnalyticsData();
-    }
   };
 
   const handleInputChange = (key, value) => {
@@ -147,13 +138,13 @@ const ProductReport = () => {
   // ========== RENDER FILTER INPUTS ==========
   const renderFilterInputs = () => {
     return (
-      <div className="filters-section">
-        <h3>Bộ lọc báo cáo</h3>
+      <div className="filters-section d-flex gap-5">
 
         {/* Report Type Selection */}
         <div className="filter-group">
           <label>Loại báo cáo:</label>
           <select
+            className="text-dark"
             value={formData.reportType}
             onChange={(e) => handleReportTypeChange(e.target.value)}
           >
@@ -173,6 +164,7 @@ const ProductReport = () => {
             <input
               type="date"
               value={formData.selectedDate}
+              className="text-dark"
               onChange={(e) =>
                 handleInputChange("selectedDate", e.target.value)
               }
@@ -188,6 +180,7 @@ const ProductReport = () => {
             <input
               type="date"
               value={formData.selectedWeekStart}
+              className="text-dark"
               onChange={(e) =>
                 handleInputChange("selectedWeekStart", e.target.value)
               }
@@ -205,6 +198,7 @@ const ProductReport = () => {
               min="2020"
               max="2050"
               value={formData.selectedYear}
+              className="text-dark me-3"
               onChange={(e) =>
                 handleInputChange("selectedYear", parseInt(e.target.value))
               }
@@ -213,6 +207,7 @@ const ProductReport = () => {
             <label>Tháng:</label>
             <select
               value={formData.selectedMonth}
+              className="text-dark"
               onChange={(e) =>
                 handleInputChange("selectedMonth", parseInt(e.target.value))
               }
@@ -235,6 +230,7 @@ const ProductReport = () => {
               min="2020"
               max="2050"
               value={formData.selectedYear}
+              className="text-dark me-3"
               onChange={(e) =>
                 handleInputChange("selectedYear", parseInt(e.target.value))
               }
@@ -243,6 +239,7 @@ const ProductReport = () => {
             <label>Quý:</label>
             <select
               value={formData.selectedQuarter}
+              className="text-dark"
               onChange={(e) =>
                 handleInputChange("selectedQuarter", parseInt(e.target.value))
               }
@@ -264,6 +261,7 @@ const ProductReport = () => {
               min="2020"
               max="2050"
               value={formData.selectedYear}
+              className="text-dark"
               onChange={(e) =>
                 handleInputChange("selectedYear", parseInt(e.target.value))
               }
@@ -279,6 +277,7 @@ const ProductReport = () => {
             <input
               type="date"
               value={formData.startDate}
+              className="text-dark me-3"
               onChange={(e) => handleInputChange("startDate", e.target.value)}
               required
             />
@@ -286,6 +285,7 @@ const ProductReport = () => {
             <input
               type="date"
               value={formData.endDate}
+              className="text-dark"
               onChange={(e) => handleInputChange("endDate", e.target.value)}
               required
             />
@@ -301,6 +301,7 @@ const ProductReport = () => {
               min="1"
               max="100"
               value={formData.topProductsLimit}
+              className="text-dark"
               onChange={(e) =>
                 handleInputChange("topProductsLimit", parseInt(e.target.value))
               }
@@ -310,11 +311,11 @@ const ProductReport = () => {
 
         {/* Apply Button */}
         <button
-          className="apply-filters-btn"
+          className="btn btn-success rounded-5 mb-3"
           onClick={handleApplyFilters}
           disabled={isLoading}
         >
-          {isLoading ? "Đang tải..." : "Áp dụng bộ lọc"}
+          {isLoading ? "Đang tải..." : "Tìm Kiếm"}
         </button>
       </div>
     );
@@ -324,12 +325,18 @@ const ProductReport = () => {
   return (
     <div className="full-container">
       <div className="product-report-container">
-        <header className="report-header">
-          <h1>Báo Cáo Hàng Hoá</h1>
-          <div className="report-actions">
-            <button onClick={refreshData} disabled={isLoading}>
-              {isLoading ? "Đang tải..." : "Làm mới"}
-            </button>
+        <header className="report-header d-flex align-items-center justify-content-between">
+          <div className="d-flex">
+            <h1>Báo Cáo Hàng Hoá</h1>
+            <div className="report-actions">
+              <button onClick={refreshData} disabled={isLoading} className="bg-white text-black fs-2 p-0 ms-3">
+                {isLoading ? "Đang tải..." : "↺"}
+              </button>
+            </div>
+          </div>
+
+          <div className="d-flex align-items-center">
+            {renderFilterInputs()}
           </div>
         </header>
 
@@ -341,38 +348,6 @@ const ProductReport = () => {
           </div>
         )}
 
-        {/* Render Filter Inputs */}
-        {renderFilterInputs()}
-
-        {/* Current Filter Display */}
-        <div className="current-filters">
-          <p>
-            <strong>Bộ lọc hiện tại:</strong> {getFormattedPeriod()}
-          </p>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="tab-navigation">
-          <button
-            className={activeTab === "overview" ? "active" : ""}
-            onClick={() => handleTabChange("overview")}
-          >
-            Tổng quan
-          </button>
-          <button
-            className={activeTab === "detailed" ? "active" : ""}
-            onClick={() => handleTabChange("detailed")}
-          >
-            Chi tiết
-          </button>
-          <button
-            className={activeTab === "analytics" ? "active" : ""}
-            onClick={() => handleTabChange("analytics")}
-          >
-            Phân tích
-          </button>
-        </div>
-
         {/* Content based on active tab */}
         <div className="tab-content">
           {activeTab === "overview" && (
@@ -383,33 +358,26 @@ const ProductReport = () => {
                 </div>
               ) : hasData ? (
                 <div className="report-summary">
-                  <h3>Báo cáo {getFormattedPeriod()}</h3>
                   {(() => {
                     const summary = getReportSummary();
                     return summary ? (
-                      <div className="summary-grid">
-                        <div className="summary-item">
+                      <div className="thong-ke-noi-dung mb-4">
+                        <div className="item fs-5">
                           <label>Tổng doanh thu:</label>
-                          <span className="value">
-                            {summary.totalSales?.toLocaleString() || "N/A"} VND
+                          <span className="value fw-bold ms-2">
+                            {summary.totalSales?.toLocaleString() || "N/A"} VNĐ
                           </span>
                         </div>
-                        <div className="summary-item">
-                          <label>Tổng số lượng:</label>
-                          <span className="value">
-                            {summary.totalQuantity?.toLocaleString() || "N/A"}
-                          </span>
-                        </div>
-                        <div className="summary-item">
+                        <div className="item fs-5">
                           <label>Số sản phẩm:</label>
-                          <span className="value">
-                            {summary.numberOfProducts || "N/A"}
+                          <span className="value fw-bold ms-2">
+                            {summary.numberOfProducts || "0"}
                           </span>
                         </div>
-                        <div className="summary-item">
+                        <div className="item fs-5">
                           <label>Sản phẩm bán chạy:</label>
-                          <span className="value">
-                            {summary.topProduct || "N/A"}
+                          <span className="value fw-bold ms-2">
+                            {summary.topProduct || "Không có"}
                           </span>
                         </div>
                       </div>
@@ -422,7 +390,7 @@ const ProductReport = () => {
                   {currentReport?.productSalesDetails &&
                     currentReport.productSalesDetails.length > 0 && (
                       <div className="product-details">
-                        <h4>Chi tiết bán hàng theo sản phẩm</h4>
+                        <h4 className="mb-4">Chi tiết bán hàng theo sản phẩm</h4>
                         <table className="product-table">
                           <thead>
                             <tr>
@@ -443,10 +411,10 @@ const ProductReport = () => {
                                     {product.quantitySold?.toLocaleString()}
                                   </td>
                                   <td>
-                                    {product.totalRevenue?.toLocaleString()} VND
+                                    {product.totalRevenue?.toLocaleString()} VNĐ
                                   </td>
                                   <td>
-                                    {product.averagePrice?.toLocaleString()} VND
+                                    {product.averagePrice?.toLocaleString()} VNĐ
                                   </td>
                                 </tr>
                               )
@@ -462,116 +430,6 @@ const ProductReport = () => {
                   <p>Vui lòng chọn bộ lọc khác và nhấn "Áp dụng bộ lọc"</p>
                 </div>
               )}
-            </div>
-          )}
-
-          {activeTab === "detailed" && (
-            <div className="detailed-tab">
-              <h3>Danh sách báo cáo chi tiết</h3>
-
-              {reportsList.length > 0 ? (
-                <>
-                  <div className="reports-list">
-                    {reportsList.map((report, index) => (
-                      <div key={index} className="report-item">
-                        <h4>
-                          {report.reportPeriod} - {report.reportDate}
-                        </h4>
-                        <p>
-                          Doanh thu: {report.totalSales?.toLocaleString()} VND
-                        </p>
-                        <p>
-                          Số lượng: {report.totalQuantitySold?.toLocaleString()}
-                        </p>
-                        <p>Sản phẩm: {report.numberOfProducts}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Pagination */}
-                  <div className="pagination">
-                    <button
-                      onClick={() => changePage(pagination.currentPage - 1)}
-                      disabled={pagination.currentPage === 1 || isLoading}
-                    >
-                      Trước
-                    </button>
-                    <span>
-                      Trang {pagination.currentPage} / {pagination.totalPages}
-                    </span>
-                    <button
-                      onClick={() => changePage(pagination.currentPage + 1)}
-                      disabled={
-                        pagination.currentPage === pagination.totalPages ||
-                        isLoading
-                      }
-                    >
-                      Sau
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p>Không có báo cáo nào. Nhấn "Làm mới" để tải dữ liệu.</p>
-              )}
-            </div>
-          )}
-
-          {activeTab === "analytics" && (
-            <div className="analytics-tab">
-              <h3>Phân tích dữ liệu</h3>
-              <div className="analytics-grid">
-                <div className="top-products">
-                  <h4>Sản phẩm bán chạy</h4>
-                  {topProducts.length > 0 ? (
-                    <table className="analytics-table">
-                      <thead>
-                        <tr>
-                          <th>Sản phẩm</th>
-                          <th>Số lượng</th>
-                          <th>Doanh thu</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {topProducts.map((product, index) => (
-                          <tr key={index}>
-                            <td>{product[0]}</td>
-                            <td>{product[1]?.toLocaleString()}</td>
-                            <td>{product[2]?.toLocaleString()} VND</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <p>Không có dữ liệu sản phẩm bán chạy</p>
-                  )}
-                </div>
-
-                <div className="category-performance">
-                  <h4>Hiệu suất theo danh mục</h4>
-                  {categoryPerformance.length > 0 ? (
-                    <table className="analytics-table">
-                      <thead>
-                        <tr>
-                          <th>Danh mục</th>
-                          <th>Tổng số lượng</th>
-                          <th>Tổng doanh thu</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {categoryPerformance.map((category, index) => (
-                          <tr key={index}>
-                            <td>{category[0]}</td>
-                            <td>{category[1]?.toLocaleString()}</td>
-                            <td>{category[2]?.toLocaleString()} VND</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <p>Không có dữ liệu hiệu suất danh mục</p>
-                  )}
-                </div>
-              </div>
             </div>
           )}
         </div>

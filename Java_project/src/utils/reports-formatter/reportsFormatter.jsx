@@ -173,10 +173,9 @@ export const formatReportPeriod = (period) => {
  * @returns {string} Formatted currency string
  */
 const formatCurrency = (amount) => {
-  if (amount == null) return "$0.00";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  if (amount == null) return "0.00";
+  return new Intl.NumberFormat("vi-VN", {
+    currency: "VND",
   }).format(amount);
 };
 
@@ -187,7 +186,7 @@ const formatCurrency = (amount) => {
  */
 const formatNumber = (number) => {
   if (number == null) return "0";
-  return new Intl.NumberFormat("en-US").format(number);
+  return new Intl.NumberFormat("vi-VN").format(number);
 };
 
 /**

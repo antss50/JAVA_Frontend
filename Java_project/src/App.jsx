@@ -1,3 +1,20 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import './App.css'
+import Layout from './components/layout/Layout';
+import Home from './page/Home';
+import Customer from './page/doitac/Customer';
+import Provider from './page/doitac/Provider';
+import CategoryList from './page/hanghoa/CategoryList';
+import ProductList from './page/hanghoa/ProductList';
+import InventoryChecking from './page/hanghoa/InventoryChecking'
+import Invoice from './page/giaodich/Invoice';
+import ReturnProduct from './page/giaodich/ReturnProduct';
+import ReturnList from './page/giaodich/ReturnList';
+import ImportProduct from './page/giaodich/ImportProduct';
+import ReturnImportedProduct from './page/giaodich/ReTurnImportedProduct';
+import CancelProduct from './page/giaodich/CancelProduct';
+import ProductReport from './page/baocao/ProductReport';
+import SaleOrder from './page/phantich/SaleOrder';
 import {
   BrowserRouter as Router,
   Routes,
@@ -39,7 +56,8 @@ function App() {
           <Route path="/hang-hoa/kiem-kho" element={<StockCheckManagement />} />
           <Route path="/hang-hoa/kiem-kho-moi" element={<StockCheckForm />} />
           <Route path="/giao-dich/hoa-don" element={<Invoice />} />
-          <Route path="/giao-dich/tra-hang" element={<ReturnProduct />} />
+          <Route path="/giao-dich/tra-hang-form" element={<ReturnProduct />} />
+          <Route path="/giao-dich/tra-hang" element={<ReturnList />} />
           <Route path="/giao-dich/nhap-hang" element={<ImportProduct />} />
           <Route
             path="/giao-dich/tra-hang-nhap"
@@ -48,9 +66,8 @@ function App() {
           <Route path="/giao-dich/xuat-huy" element={<CancelProduct />} />
           <Route path="/doi-tac/khach-hang" element={<Customer />} />
           <Route path="/doi-tac/nha-cung-cap" element={<Provider />} />
-          <Route path="/bao-cao/cuoi-ngay" element={<DailyReport />} />
-          <Route path="/bao-cao/hang-hoa" element={<ProductReport />} />
-          <Route path="/ban-hang" element={<SaleAnalyze />} />
+          <Route path="/bao-cao" element={<ProductReport />} />
+          <Route path="/ban-hang" element={<SaleOrder />} />
           <Route
             path="/hang-hoa/bill-management"
             element={<BillManagement />}

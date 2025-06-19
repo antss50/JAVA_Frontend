@@ -1,0 +1,60 @@
+/* ProductReport.css - Style cho trang báo cáo hàng hoá */
+
+.product-report-container {
+    padding: 10px;
+    width: 97%;
+    margin: auto;
+}
+
+/* Bộ lọc */
+.filters-section {
+    margin-top: 12px;
+    border-radius: 10px;
+    padding: 16px 12px;
+}
+
+.filter-group {
+    margin-bottom: 12px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #d0d7de;
+    background: #fff;
+    font-size: 1rem;
+}
+
+/* Tabs */
+.product-table {
+    width: 100%;
+    height: 80%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ccc;
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 1.05rem;
+  color: #333;
+  vertical-align: middle;
+}
+
+.product-table th {
+  background-color: #a1d0ff;
+  font-weight: 700;
+}

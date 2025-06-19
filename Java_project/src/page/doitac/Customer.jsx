@@ -2,35 +2,52 @@ import { useState, useEffect } from "react";
 
 const Customer = () => {
     const [customers, setCustomers] = useState([]);
-    const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6"
+    const [totalsMap, setTotalsMap] = useState({});
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const size = 20;
+    const token = "";
 
     useEffect(() => {
-        const fetchCustomers = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/parties/type/CUSTOMER`, {
+                // Fetch danh sách khách hàng
+                const customerRes = await fetch(`http://localhost:8080/api/parties?partyType=CUSTOMER?page=${currentPage}&size=${size}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    method: 'GET'
+                    }
                 });
+                const customerList = await customerRes.json();
+                setCustomers(Array.isArray(customerList) ? customerList : []);
+                setTotalPages(result.totalPages || 1);
+                // Fetch hóa đơn
+                const invoiceRes = await fetch(`http://localhost:8080/api/ar/invoices`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const invoiceData = await invoiceRes.json();
+                const invoices = invoiceData.content || [];
 
-                const result = await response.json();
-                if (Array.isArray(result)) {
-                    setCustomers(result);
-                } else {
-                    setCustomers([]);
-                    console.error("Expected array from API, got:", result);
-                }
+                // Gộp tổng tiền theo customerId
+                const totals = {};
+                invoices.forEach(inv => {
+                    const id = inv.customerId;
+                    if (!totals[id]) totals[id] = 0;
+                    totals[id] += inv.totalAmount;
+                });
+                setTotalsMap(totals);
             } catch (error) {
-                console.error('Error fetching invoices:', error);
-            } finally {
-
+                console.error('Lỗi khi lấy dữ liệu khách hàng hoặc hóa đơn:', error);
             }
         };
 
-        fetchCustomers();
+        fetchData();
     }, []);
+
     return (
         <div className="full-container">
             <div className="kiemkho-container">
@@ -45,6 +62,7 @@ const Customer = () => {
                                 <th>ID</th>
                                 <th>Tên Khách Hàng</th>
                                 <th>Số điện thoại</th>
+                                <th>Tổng tiền đã mua</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -53,13 +71,26 @@ const Customer = () => {
                                     <td>{customer.id}</td>
                                     <td>{customer.name}</td>
                                     <td>{customer.phone}</td>
+                                    <td>{(totalsMap[customer.id] || 0).toLocaleString()} VNĐ</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    <nav className="mt-3">
+                        <ul className="pagination justify-content-center">
+                            {[...Array(totalPages).keys()].map((page) => (
+                                <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                        {page + 1}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
+
 export default Customer;

@@ -5,17 +5,15 @@
 
 /* Thanh tìm kiếm fixed bên trái */
 .kiemkho-search-box,.danhmuc-search-box {
-  position: fixed;
-  top: 175px;
-  left: 0;
+  position: absolute;
   width: 16.66vw;
   min-width: 220px;
-  height: calc(100vh - 175px);
+  height: 15vh;
   background-color: #f1f1f1;
   padding: 16px 16px 16px 20px;
   border-radius: 0 8px 8px 0;
   box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
   overflow-y: auto;
   z-index: 900;
 }
@@ -100,11 +98,10 @@
 .kiemkho-table th,
 .kiemkho-table td {
   border: 1px solid #ccc;
-  padding: 14px 18px;
-  text-align: left;
+  padding: 14px;
+  text-align: center;
   font-size: 1.05rem;
   color: #333;
-  vertical-align: middle;
 }
 
 .kiemkho-table th {
@@ -113,19 +110,7 @@
 }
 
 /* Scroll bar cho cột tìm kiếm nếu nội dung dài */
-.kiemkho-search-box::-webkit-scrollbar {
-  width: 8px;
-}
 
-.kiemkho-search-box::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.kiemkho-search-box::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
 
 /* Responsive: thu nhỏ trên mobile */
 @media (max-width: 768px) {

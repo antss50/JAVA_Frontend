@@ -1,15 +1,24 @@
 import { useState, useEffect } from "react";
-
+import { useNavigate } from "react-router-dom";
 const Invoice = () => {
+    const navigate = useNavigate();
+
     const [invoices, setInvoices] = useState([]);
     const [invoiceDetails, setInvoiceDetails] = useState([]);
     const [orderLines, setOrderLines] = useState([]);
+
+    const [searchTerm, setSearchTerm] = useState("")
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const size = 20;
     const [show, setShow] = useState(false);
-    const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6"
+
+    const token = ""
     useEffect(() => {
         const fetchInvoices = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/ar/invoices`, {
+                const response = await fetch(`http://localhost:8080/api/ar/invoices?page=${currentPage}&size=${size}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -18,8 +27,8 @@ const Invoice = () => {
                 });
 
                 const result = await response.json();
-
                 setInvoices(result.content || []);
+                setTotalPages(result.totalPages || 1);
             } catch (error) {
                 console.error('Error fetching invoices:', error);
             } finally {
@@ -68,21 +77,46 @@ const Invoice = () => {
         }
     };
 
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`http://localhost:8080/api/ar/invoices/number/${encodeURIComponent(searchTerm)}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            });
+            if (response.ok) {
+                const result = await response.json();
+                setInvoices((Array.isArray(result) ? result : [result]));
+            } else {
+                console.error('Failed to search invoices. Status:', response.status);
+            }
+        } catch (error) {
+            console.error('Error searching invoices:', error);
+        }
+    };
+
     return (
+        
         <div className="full-container">
             <div className="kiemkho-container">
-                {/* <form className="kiemkho-search-box">
-                    <h4>Tìm kiếm</h4>
-                    <input
-                        type="text"
-                        placeholder="Nhập tên khách hàng"
-                        className="kiemkho-input text-black"
-                    
-                </form> */}
-
                 <div className="kiemkho-main-content m-0 container-fluid">
                     <div className="kiemkho-header">
                         <h2 className="kiemkho-title">HOÁ ĐƠN</h2>
+                        <form className="d-flex gap-5 me-5" onSubmit={handleSearch}>
+                            <input
+                                type="text"
+                                placeholder="Nhập mã hoá đơn"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="rounded-2 bg-white text-dark px-3"
+                            />
+                            <button className="btn btn-primary me-4">
+                                Tìm Kiếm
+                            </button>
+                        </form>
                     </div>
 
                     {show && invoiceDetails && (
@@ -124,6 +158,15 @@ const Invoice = () => {
 
                                     </div>
                                     <div className="modal-footer">
+                                        <button className="btn btn-warning" onClick={() => navigate('/giao-dich/tra-hang-form', {
+                                            state: {
+                                                customerId: invoiceDetails.customerId,
+                                                orderId: invoiceDetails.orderId,
+                                                orderLines: orderLines
+                                            }
+                                        })}>
+                                            Trả Hàng
+                                        </button>
                                         <button type="button" className="btn btn-danger" onClick={() => setShow(false)}>
                                             Đóng
                                         </button>
@@ -158,6 +201,17 @@ const Invoice = () => {
                             ))}
                         </tbody>
                     </table>
+                    <nav className="mt-3">
+                        <ul className="pagination justify-content-center">
+                            {[...Array(totalPages).keys()].map((page) => (
+                                <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                        {page + 1}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>

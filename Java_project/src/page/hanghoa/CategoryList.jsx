@@ -5,10 +5,15 @@ import ToastMessage from "../../component/ToastMessage";
 const CategoryList = () => {
     const [categories, setCategories] = useState([]);
     const [categoryDetails, setCategoryDetails] = useState([]);
+
     const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const size = 20;
+
     const [show, setShow] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
+
     const [newCategory, setNewCategory] = useState({
         name: "",
         description: "",
@@ -29,7 +34,7 @@ const CategoryList = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/inventory/categories`, {
+                const response = await fetch(`http://localhost:8080/api/inventory/categories?page=${currentPage}&size=${size}`, {
                     headers: {
                         Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                         'Content-Type': 'application/json'
@@ -38,12 +43,12 @@ const CategoryList = () => {
                 });
 
                 const result = await response.json();
-
                 setCategories(result.content || []);
+                setTotalPages(result.totalPages || 1)
             } catch (error) {
                 console.error('Error fetching categories:', error);
             } finally {
-                setLoading(false);
+               
             }
         };
 
@@ -51,7 +56,6 @@ const CategoryList = () => {
     }, []);
 
     const handleClickDetail = async (categoryId) => {
-        setLoading(true);
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/categories/${categoryId}/products`, {
                 headers: {
@@ -72,19 +76,20 @@ const CategoryList = () => {
         } catch (error) {
             console.error('Error fetching category details:', error);
         } finally {
-            setLoading(false);
+         
         }
     };
 
 
     const handleSearch = async (name) => {
-        setLoading(true);
+    
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/categories/search?name=${encodeURIComponent(name)}`, {
                 headers: {
                     Authorization: `Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6`,
                     'Content-Type': 'application/json'
-                }
+                },
+                method: 'GET'
             });
 
             if (response.ok) {
@@ -96,13 +101,13 @@ const CategoryList = () => {
         } catch (error) {
             console.error('Error searching categories:', error);
         } finally {
-            setLoading(false);
+            
         }
     };
 
 
     const handleNewCategory = async () => {
-        setLoading(true);
+       
 
         const payload = {
             name: newCategory.name,
@@ -135,7 +140,7 @@ const CategoryList = () => {
         } catch (error) {
             console.error('Error creating category:', error);
         } finally {
-            setLoading(false);
+           
         }
     };
 
@@ -223,7 +228,6 @@ const CategoryList = () => {
                             <thead>
                                 <tr>
                                     <th>Mã loại hàng</th>
-                                    {/* <th>Thời gian nhập</th> */}
                                     <th>Tên loại hàng</th>
                                     <th>Mô tả</th>
                                 </tr>
@@ -232,13 +236,23 @@ const CategoryList = () => {
                                 {categories.map((category) => (
                                     <tr key={category.id} onClick={() => handleClickDetail(category.id)} style={{ cursor: 'pointer' }}>
                                         <td>{category.id}</td>
-                                        {/* <td>{new Date(category.createdAt).toLocaleString()}</td> */}
                                         <td>{category.name}</td>
                                         <td>{category.description}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+                        <nav className="mt-3">
+                            <ul className="pagination justify-content-center">
+                                {[...Array(totalPages).keys()].map((page) => (
+                                    <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                                        <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                            {page + 1}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -256,7 +270,7 @@ const CategoryList = () => {
                                     <p>Không có sản phẩm nào.</p>
                                 ) : (
                                     <table className="table table-bordered table-hover">
-                                        <thead className="table-light">
+                                        <thead className="table-light text-center">
                                             <tr>
                                                 <th>Id</th>
                                                 <th>Tên sản phẩm</th>
@@ -265,14 +279,14 @@ const CategoryList = () => {
                                                 <th>Giá bán</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody className="text-center">
                                             {categoryDetails.map((product) => (
                                                 <tr key={product.id}>
                                                     <td>{product.id}</td>
                                                     <td>{product.name}</td>
                                                     <td>{product.unit}</td>
-                                                    <td>{product.purchasePrice}</td>
-                                                    <td>{product.sellingPrice}</td>
+                                                    <td>{product.purchasePrice} VNĐ</td>
+                                                    <td>{product.sellingPrice} VNĐ</td>
                                                 </tr>
                                             ))}
                                         </tbody>

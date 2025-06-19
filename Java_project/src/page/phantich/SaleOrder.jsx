@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import ToastMessage from "../../component/ToastMessage";
 import "../../App.css";
 import "../hanghoa/product.css";
-const SaleAnalyze = () => {
+const SaleOrder = () => {
     const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [customerId, setCustomerId] = useState("");
     const [customerName, setCustomerName] = useState("");
     const [customerPhone, setCustomerPhone] = useState("");
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const size = 20;
 
     // ✅ Toast state
     const [toastShow, setToastShow] = useState(false);
@@ -15,27 +17,26 @@ const SaleAnalyze = () => {
     const [toastVariant, setToastVariant] = useState("success");
 
 
-    const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzQ5ODkwODM5LCJleHAiOjE3NDk5NzcyMzl9.PXFgkGBcwJsCsP9h42_akOHeiwNwILaZXLZGM2XeQ41BrMWxzpaqpSSbaPA7Aob6";
+    const token = "";
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchPagedProducts = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/inventory/products`, {
+                const response = await fetch(`http://localhost:8080/api/inventory/products?page=${currentPage}&size=${size}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    method: 'GET'
+                    }
                 });
-
                 const result = await response.json();
                 setProducts(result.content || []);
+                setTotalPages(result.totalPages || 1);
             } catch (error) {
-                console.error('Error fetching products:', error);
+                console.error("Lỗi khi tải trang sản phẩm:", error);
             }
         };
 
-        fetchProducts();
-    }, []);
+        fetchPagedProducts();
+    }, [currentPage]);
 
     const handleSelect = (product) => {
         setSelectedProducts(prev => {
@@ -199,6 +200,17 @@ const SaleAnalyze = () => {
                                 ))}
                             </tbody>
                         </table>
+                        <nav className="mt-3">
+                            <ul className="pagination justify-content-center">
+                                {[...Array(totalPages).keys()].map((page) => (
+                                    <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                                        <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                            {page + 1}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
                     </div>
                 </div>
                 <div className="sale-analyze-right p-5 flex-fill w-25">
@@ -262,4 +274,4 @@ const SaleAnalyze = () => {
     );
 };
 
-export default SaleAnalyze;
+export default SaleOrder;

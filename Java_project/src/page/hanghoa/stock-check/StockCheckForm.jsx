@@ -182,7 +182,7 @@ const StockCheckForm = () => {
           placeholder="Tìm kiếm sản phẩm theo tên hoặc mã..."
           value={searchQuery}
           onChange={(e) => handleProductSearch(e.target.value)}
-          className="product-search-input"
+          className="product-search-input bg-light text-dark"
         />
         <FaSearch className="search-icon" />
       </div>{" "}
@@ -260,8 +260,8 @@ const StockCheckForm = () => {
 
   const renderSelectedProductsTable = () => (
     <div className="selected-products-section">
-      <table className="kiemkhochitiet-table">
-        <thead>
+      <table className="table table-hover table-bordered kiemkhochitiet-table">
+        <thead className="table-light text-center">
           <tr>
             <th>STT</th>
             <th>Mã hàng hóa</th>
@@ -273,12 +273,11 @@ const StockCheckForm = () => {
             <th>Thao tác</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="align-middle text-center">
           {selectedProducts.length === 0 ? (
             <tr>
-              <td colSpan="8" className="no-data">
-                Chưa có sản phẩm nào được chọn. Sử dụng ô tìm kiếm bên trên để
-                thêm sản phẩm.
+              <td colSpan="8" className="text-muted">
+                Chưa có sản phẩm nào được chọn. Sử dụng ô tìm kiếm bên trên để thêm sản phẩm.
               </td>
             </tr>
           ) : (
@@ -286,18 +285,17 @@ const StockCheckForm = () => {
               <tr key={product.id}>
                 <td>{index + 1}</td>
                 <td>{product.id}</td>
-                <td>{product.name}</td>
-                <td>{product.currentStock}</td>
+                <td className="text-start fw-semibold">{product.name}</td>
+                <td>{product.currentStock?.toLocaleString() || 0}</td>
                 <td>
                   <input
                     type="number"
                     value={product.expectedQuantity || ""}
-                    onChange={(e) =>
-                      handleExpectedQuantityChange(product.id, e.target.value)
-                    }
+                    onChange={(e) => handleExpectedQuantityChange(product.id, e.target.value)}
                     min="0"
                     step="0.01"
-                    className="quantity-input"
+                    className="form-control form-control-sm text-end"
+                    style={{ maxWidth: "100px", margin: "0 auto" }}
                   />
                 </td>
                 <td>{product.unit}</td>
@@ -305,17 +303,15 @@ const StockCheckForm = () => {
                   <input
                     type="text"
                     value={product.notes || ""}
-                    onChange={(e) =>
-                      handleNotesChange(product.id, e.target.value)
-                    }
-                    placeholder="Ghi chú cho sản phẩm này..."
-                    className="notes-input"
+                    onChange={(e) => handleNotesChange(product.id, e.target.value)}
+                    placeholder="Ghi chú..."
+                    className="form-control form-control-sm"
                   />
                 </td>
                 <td>
                   <button
                     onClick={() => handleRemoveProduct(product.id)}
-                    className="remove-btn"
+                    className="btn btn-sm btn-danger"
                     title="Xóa sản phẩm"
                   >
                     <FaTrash />
@@ -339,6 +335,7 @@ const StockCheckForm = () => {
             value={checkedBy}
             onChange={(e) => setCheckedBy(e.target.value)}
             placeholder="Nhập tên người kiểm"
+            className="bg-light text-dark"
             required
           />
         </label>
@@ -348,6 +345,7 @@ const StockCheckForm = () => {
           <input
             type="date"
             value={new Date().toISOString().split("T")[0]}
+            className="bg-light text-dark"
             readOnly
           />
         </label>
@@ -358,6 +356,7 @@ const StockCheckForm = () => {
             type="text"
             value={checkReference}
             onChange={(e) => setCheckReference(e.target.value)}
+            className="bg-light text-dark"
           />
         </label>
 
@@ -377,6 +376,7 @@ const StockCheckForm = () => {
             value={checkNotes}
             onChange={(e) => setCheckNotes(e.target.value)}
             placeholder="Ghi chú cho toàn bộ phiếu kiểm..."
+            className="bg-light text-dark"
             rows="3"
           />
         </label>

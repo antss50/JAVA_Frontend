@@ -8,13 +8,14 @@ import {
   FaCalculator,
 } from "react-icons/fa";
 import useBillManagement from "../../../hooks/useBillManagement";
+import usePartyManagement from "../../../hooks/usePartyManagement";
+import useProductWithStock from "../../../hooks/useProductWithStock";
 import "../product.css";
 
 const BillForm = () => {
   const navigate = useNavigate();
   const { billId } = useParams(); // For editing existing bills
   const isEditMode = !!billId;
-
   const {
     currentBill,
     loading,
@@ -23,7 +24,27 @@ const BillForm = () => {
     createBill,
     updateBill,
     clearError,
-  } = useBillManagement();
+  } = useBillManagement({ autoLoad: false });
+
+  // Initialize party management for suppliers
+  const {
+    parties: suppliers,
+    loading: partyLoading,
+    error: partyError,
+    loadParties,
+  } = usePartyManagement({
+    initialType: "SUPPLIER",
+    autoLoad: true, // Auto-load suppliers on mount
+  });
+
+  // Initialize product with stock management
+  const {
+    allProducts,
+    allProductsLoading: productLoading,
+    allProductsError: productError,
+  } = useProductWithStock({
+    autoFetch: true,
+  });
 
   // Form data state
   const [billData, setBillData] = useState({
@@ -34,7 +55,6 @@ const BillForm = () => {
     notes: "",
     status: "PENDING",
   });
-
   const [billLines, setBillLines] = useState([
     {
       id: null,
@@ -45,10 +65,6 @@ const BillForm = () => {
       unitPrice: 0,
     },
   ]);
-  // TODO: Implement vendor and product APIs when available
-  // No documented APIs for fetching vendors and products in the final_flow_document.md
-  const [vendors, setVendors] = useState([]);
-  const [products, setProducts] = useState([]);
 
   // Toast notification state
   const [toastShow, setToastShow] = useState(false);
@@ -119,9 +135,10 @@ const BillForm = () => {
       prev.map((line, i) => (i === index ? { ...line, [field]: value } : line))
     );
   };
-
   const handleProductChange = (index, productId) => {
-    const selectedProduct = products.find((p) => p.id === parseInt(productId));
+    const selectedProduct = allProducts.find(
+      (p) => p.id === parseInt(productId)
+    );
 
     setBillLines((prev) =>
       prev.map((line, i) =>
@@ -179,17 +196,15 @@ const BillForm = () => {
     }
     if (!billData.partyId) {
       errors.push("Vui lòng chọn nhà cung cấp");
-    }
-
-    // Check if vendor data is available
-    if (vendors.length === 0) {
+    } // Check if supplier data is available
+    if (suppliers.length === 0) {
       errors.push(
         "Không có dữ liệu nhà cung cấp. Vui lòng liên hệ quản trị viên."
       );
     }
 
     // Check if product data is available for bill lines
-    if (products.length === 0 && billLines.some((line) => line.productId)) {
+    if (allProducts.length === 0 && billLines.some((line) => line.productId)) {
       errors.push("Không có dữ liệu sản phẩm. Vui lòng liên hệ quản trị viên.");
     }
 
@@ -227,9 +242,7 @@ const BillForm = () => {
     if (validationErrors.length > 0) {
       showToast(validationErrors.join(", "), "error");
       return;
-    }
-
-    // Prepare bill data
+    } // Prepare bill data
     const formattedBillData = {
       ...billData,
       billLines: billLines
@@ -237,14 +250,39 @@ const BillForm = () => {
           (line) =>
             line.description.trim() && line.quantity > 0 && line.unitPrice > 0
         )
-        .map((line) => ({
-          id: line.id,
-          productId: line.productId ? parseInt(line.productId) : null,
-          description: line.description.trim(),
-          quantity: parseInt(line.quantity),
-          unitPrice: parseFloat(line.unitPrice),
-        })),
+        .map((line) => {
+          const lineData = {
+            productId: line.productId ? parseInt(line.productId) : null,
+            description: line.description.trim(),
+            quantity: parseInt(line.quantity),
+            unitPrice: parseFloat(line.unitPrice),
+          };
+
+          // Only include id for existing lines (not for new lines with id: null)
+          if (line.id !== null && line.id !== undefined) {
+            lineData.id = line.id;
+          }
+          return lineData;
+        }),
     };
+
+    // Add debugging for bill updates
+    if (isEditMode) {
+      console.log("=== BILL UPDATE DEBUG ===");
+      console.log("Original bill:", currentBill);
+      console.log("Original bill lines:", currentBill?.billLines);
+      console.log("Current form bill lines:", billLines);
+      console.log("Formatted bill data:", formattedBillData);
+      console.log(
+        "New lines (no id):",
+        formattedBillData.billLines.filter((line) => !line.hasOwnProperty("id"))
+      );
+      console.log(
+        "Existing lines (with id):",
+        formattedBillData.billLines.filter((line) => line.hasOwnProperty("id"))
+      );
+      console.log("========================");
+    }
 
     let result;
     if (isEditMode) {
@@ -261,6 +299,7 @@ const BillForm = () => {
         navigate("/hang-hoa/bill-management");
       }, 1500);
     } else {
+      console.error("Save failed:", result);
       showToast(result.error || "Có lỗi xảy ra", "error");
     }
   };
@@ -318,15 +357,16 @@ const BillForm = () => {
               border: "1px solid #ccc",
             }}
           >
+            {" "}
             <option value="">Chọn nhà cung cấp...</option>
-            {vendors.length === 0 ? (
+            {suppliers.length === 0 ? (
               <option value="" disabled>
-                Không có dữ liệu nhà cung cấp
+                {partyLoading ? "Đang tải..." : "Không có dữ liệu nhà cung cấp"}
               </option>
             ) : (
-              vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
-                  {vendor.name}
+              suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
                 </option>
               ))
             )}
@@ -349,7 +389,9 @@ const BillForm = () => {
             }}
           >
             <option value="PENDING">Chờ xử lý</option>
-            <option value="APPROVED">Đã duyệt</option>
+            <option value="PAID">Đã thanh toán</option>
+            <option value="PARTIALLY_PAID">Thanh toán một phần</option>
+            <option value="OVERDUE">Quá hạn</option>
             <option value="CANCELLED">Đã hủy</option>
           </select>
         </label>
@@ -495,12 +537,14 @@ const BillForm = () => {
                   }}
                 >
                   <option value="">Chọn sản phẩm...</option>
-                  {products.length === 0 ? (
+                  {allProducts.length === 0 ? (
                     <option value="" disabled>
-                      Không có dữ liệu sản phẩm
+                      {productLoading
+                        ? "Đang tải..."
+                        : "Không có dữ liệu sản phẩm"}
                     </option>
                   ) : (
-                    products.map((product) => (
+                    allProducts.map((product) => (
                       <option key={product.id} value={product.id}>
                         {product.name}
                       </option>

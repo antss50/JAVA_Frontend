@@ -100,12 +100,21 @@ export const formatBillRequest = (billData) => {
     status: billData.status || "PENDING",
     notes: billData.notes?.trim() || "",
     billLines:
-      billData.billLines?.map((line) => ({
-        productId: line.productId ? parseInt(line.productId) : null,
-        description: line.description?.trim() || "",
-        quantity: parseInt(line.quantity),
-        unitPrice: parseFloat(line.unitPrice),
-      })) || [],
+      billData.billLines?.map((line) => {
+        const lineData = {
+          productId: line.productId ? parseInt(line.productId) : null,
+          description: line.description?.trim() || "",
+          quantity: parseInt(line.quantity),
+          unitPrice: parseFloat(line.unitPrice),
+        };
+
+        // Include id for existing lines (for updates)
+        if (line.id !== undefined && line.id !== null) {
+          lineData.id = line.id;
+        }
+
+        return lineData;
+      }) || [],
   };
 };
 
@@ -128,18 +137,67 @@ export const formatPaymentRequest = (billId, amount) => {
  * @returns {Array} Formatted alerts
  */
 export const formatLowStockAlertsForDisplay = (alerts) => {
-  if (!Array.isArray(alerts)) return [];
+  console.log("formatLowStockAlertsForDisplay - Input alerts:", alerts);
+  console.log("formatLowStockAlertsForDisplay - Input type:", typeof alerts);
+  console.log(
+    "formatLowStockAlertsForDisplay - Is array?",
+    Array.isArray(alerts)
+  );
 
-  return alerts.map((alert) => ({
-    ...alert,
-    currentStock: formatNumber(alert.currentStock),
-    reorderLevel: formatNumber(alert.reorderLevel),
-    maxStock: formatNumber(alert.maxStock),
-    suggestedOrderQuantity: formatNumber(alert.suggestedOrderQuantity),
-    lastUpdated: formatDateTimeForDisplay(alert.lastUpdated),
-    alertBadge: getAlertLevelBadge(alert.alertLevel),
-    stockDeficit: alert.reorderLevel - alert.currentStock,
-  }));
+  if (!Array.isArray(alerts)) {
+    console.log(
+      "formatLowStockAlertsForDisplay - Returning empty array, input is not array"
+    );
+    return [];
+  }
+
+  const result = alerts.map((alert) => {
+    // Parse numeric values safely
+    const currentStock = parseFloat(alert.currentStock) || 0;
+    const reorderLevel = parseFloat(alert.reorderLevel) || 0;
+    const maxStock = parseFloat(alert.maxStock) || reorderLevel * 2; // Default to 2x reorder level
+    const stockDeficit = Math.max(0, reorderLevel - currentStock);
+
+    // Calculate suggested order quantity if not provided
+    const suggestedOrderQuantity =
+      parseFloat(alert.suggestedOrderQuantity) ||
+      Math.max(stockDeficit, Math.ceil(reorderLevel * 0.5)); // At least the deficit or 50% of reorder level
+
+    // Determine alert level based on stock situation
+    let alertLevel = alert.alertLevel;
+    if (!alertLevel) {
+      if (currentStock <= 0) {
+        alertLevel = "OUT_OF_STOCK";
+      } else if (currentStock < reorderLevel * 0.5) {
+        alertLevel = "CRITICAL";
+      } else {
+        alertLevel = "LOW";
+      }
+    }
+
+    return {
+      ...alert,
+      // Keep original numeric values for calculations
+      currentStock,
+      reorderLevel,
+      maxStock,
+      suggestedOrderQuantity,
+      // Add formatted display values
+      currentStockDisplay: formatNumber(currentStock),
+      reorderLevelDisplay: formatNumber(reorderLevel),
+      maxStockDisplay: formatNumber(maxStock),
+      suggestedOrderQuantityDisplay: formatNumber(suggestedOrderQuantity),
+      lastUpdated: alert.lastUpdated
+        ? formatDateTimeForDisplay(alert.lastUpdated)
+        : "N/A",
+      alertBadge: getAlertLevelBadge(alertLevel),
+      alertLevel,
+      stockDeficit,
+    };
+  });
+
+  console.log("formatLowStockAlertsForDisplay - Formatted result:", result);
+  return result;
 };
 
 /**

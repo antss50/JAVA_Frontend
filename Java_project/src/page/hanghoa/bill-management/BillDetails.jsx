@@ -160,7 +160,6 @@ const BillDetails = () => {
         >
           <FaArrowLeft /> Quay lại
         </button>
-
         {currentBill?.status !== "PAID" && (
           <button
             onClick={handlePaymentClick}
@@ -178,10 +177,9 @@ const BillDetails = () => {
           >
             <FaMoneyBillWave /> Thanh toán
           </button>
-        )}
-
+        )}{" "}
         <button
-          onClick={() => navigate(`/hang-hoa/sua-hoa-don/${billId}`)}
+          onClick={() => navigate(`/hang-hoa/bill-management/edit/${billId}`)}
           style={{
             padding: "8px 16px",
             backgroundColor: "#ffc107",
@@ -196,41 +194,6 @@ const BillDetails = () => {
         >
           <FaEdit /> Sửa
         </button>
-
-        <button
-          onClick={handlePrint}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#17a2b8",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <FaPrint /> In
-        </button>
-
-        <button
-          onClick={handleExport}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <FaFileDownload /> Xuất PDF
-        </button>
-
         <button
           onClick={handleDeleteClick}
           style={{

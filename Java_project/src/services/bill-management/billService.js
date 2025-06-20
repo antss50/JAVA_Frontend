@@ -44,8 +44,14 @@ const apiRequest = async (url, options = {}) => {
     } else {
       data = await response.text();
     }
-
     if (!response.ok) {
+      console.error("API Error Response:", {
+        status: response.status,
+        statusText: response.statusText,
+        url: url,
+        data: data,
+      });
+
       throw new Error(
         data.message || data.error || `HTTP error! status: ${response.status}`
       );
@@ -156,10 +162,22 @@ export const updateBill = async (billId, billData) => {
     return { success: false, error: "Bill data is required" };
   }
 
-  return apiRequest(`${BILL_API_BASE}/${billId}`, {
+  console.log("=== BILL SERVICE UPDATE DEBUG ===");
+  console.log("Bill ID:", billId);
+  console.log("Bill Data:", billData);
+  console.log("API Endpoint:", `${BILL_API_BASE}/${billId}`);
+  console.log("================================");
+
+  const result = await apiRequest(`${BILL_API_BASE}/${billId}`, {
     method: "PUT",
     body: JSON.stringify(billData),
   });
+
+  console.log("=== BILL SERVICE UPDATE RESULT ===");
+  console.log("Result:", result);
+  console.log("=================================");
+
+  return result;
 };
 
 /**
@@ -207,7 +225,15 @@ export const deleteBill = async (billId) => {
  * @returns {Promise<Object>} Low stock alerts array
  */
 export const getLowStockAlerts = async () => {
-  return apiRequest(`${PURCHASE_ORDER_API_BASE}/low-stock-alerts`);
+  console.log(
+    "billService.getLowStockAlerts - Starting request to:",
+    `${PURCHASE_ORDER_API_BASE}/low-stock-alerts`
+  );
+  const result = await apiRequest(
+    `${PURCHASE_ORDER_API_BASE}/low-stock-alerts`
+  );
+  console.log("billService.getLowStockAlerts - API result:", result);
+  return result;
 };
 
 /**

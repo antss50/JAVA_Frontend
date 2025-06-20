@@ -5,7 +5,7 @@
  * Handles creating new stock checks (both single and batch)
  */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaList,
@@ -15,29 +15,34 @@ import {
   FaSave,
   FaCheck,
 } from "react-icons/fa";
-import useStockCheck from "/src/hooks/useStockCheck.jsx";
+import useStockCheckCreation from "/src/hooks/useStockCheckCreation_new.js";
 import "../product.css";
 
 const StockCheckForm = () => {
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
-
   const {
     // State
     products,
+    allProducts,
+    filteredProducts,
     selectedProducts,
+    searchQuery,
     batchResults,
 
     // Loading states
     productsLoading,
+    allProductsLoading,
     batchLoading,
 
     // Error states
     productsError,
+    allProductsError,
     error,
 
     // Operations
     searchProducts,
+    fetchAllProducts,
     addProductToSelection,
     removeProductFromSelection,
     updateExpectedQuantity,
@@ -46,17 +51,14 @@ const StockCheckForm = () => {
     performBatchStockCheck,
     clearBatchResults,
     clearError,
-  } = useStockCheck();
 
+    // Utilities
+    generateCheckReference,
+  } = useStockCheckCreation();
   // =============================================================================
   // LOCAL STATE
   // =============================================================================
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showProductSearch, setShowProductSearch] = useState(false);
-  const [checkReference, setCheckReference] = useState(
-    `CHK-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`
-  );
+  const [checkReference, setCheckReference] = useState("");
   const [checkedBy, setCheckedBy] = useState(
     localStorage.getItem("username") || ""
   );
@@ -65,27 +67,28 @@ const StockCheckForm = () => {
   const [showResults, setShowResults] = useState(false);
 
   // =============================================================================
-  // EVENT HANDLERS
+  // EFFECTS
   // =============================================================================
 
-  const handleProductSearch = async (query) => {
-    setSearchQuery(query);
-    if (query.trim().length >= 2) {
-      try {
-        await searchProducts(query.trim(), { size: 20 });
-        setShowProductSearch(true);
-      } catch (err) {
-        console.error("Search error:", err);
-      }
-    } else {
-      setShowProductSearch(false);
+  // Initialize check reference
+  useEffect(() => {
+    if (!checkReference) {
+      setCheckReference(generateCheckReference());
     }
+  }, [checkReference, generateCheckReference]);
+
+  // =============================================================================
+  // EVENT HANDLERS
+  // =============================================================================
+  const handleProductSearch = async (query) => {
+    // The filtering is now handled automatically by the hook
+    await searchProducts(query);
   };
 
   const handleAddProduct = (product) => {
     addProductToSelection(product);
-    setSearchQuery("");
-    setShowProductSearch(false);
+    // Clear search by calling searchProducts with empty string
+    searchProducts("");
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -102,7 +105,6 @@ const StockCheckForm = () => {
   const handleNotesChange = (productId, notes) => {
     updateProductNotes(productId, notes);
   };
-
   const handlePerformStockCheck = async () => {
     if (selectedProducts.length === 0) {
       alert("Vui lòng chọn ít nhất một sản phẩm để kiểm kho");
@@ -117,15 +119,10 @@ const StockCheckForm = () => {
     try {
       clearError();
 
-      const stockCheckData = selectedProducts.map((product) => ({
-        productId: product.id,
-        expectedQuantity: product.expectedQuantity,
+      const result = await performBatchStockCheck({
         checkedBy: checkedBy.trim(),
         checkReference: checkReference,
-        notes: product.notes || checkNotes,
-      }));
-
-      const result = await performBatchStockCheck(stockCheckData);
+      });
 
       if (checkStatus === "COMPLETED") {
         setShowResults(true);
@@ -146,18 +143,14 @@ const StockCheckForm = () => {
   const handleComplete = async () => {
     setCheckStatus("COMPLETED");
     await handlePerformStockCheck();
+    // Navigate back to StockCheckManagement after completion
+    navigate("/hang-hoa/kiem-kho");
   };
-
   const handleNewCheck = () => {
     clearSelection();
     clearBatchResults();
     setShowResults(false);
-    setCheckReference(
-      `CHK-${new Date()
-        .toISOString()
-        .slice(0, 10)
-        .replace(/-/g, "")}-${Date.now().toString().slice(-3)}`
-    );
+    setCheckReference(generateCheckReference());
     setCheckNotes("");
   };
 
@@ -180,7 +173,6 @@ const StockCheckForm = () => {
   // =============================================================================
   // RENDER HELPERS
   // =============================================================================
-
   const renderProductSearch = () => (
     <div className="product-search-section">
       <div className="search-input-container">
@@ -193,39 +185,75 @@ const StockCheckForm = () => {
           className="product-search-input"
         />
         <FaSearch className="search-icon" />
-      </div>
-
-      {showProductSearch && (
-        <div className="product-search-results">
-          {productsLoading ? (
-            <div className="search-loading">Đang tìm kiếm...</div>
-          ) : products.length === 0 ? (
-            <div className="no-search-results">Không tìm thấy sản phẩm nào</div>
-          ) : (
-            <div className="search-results-list">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="search-result-item"
-                  onClick={() => handleAddProduct(product)}
-                >
-                  <div className="product-info">
-                    <strong>{product.name}</strong>
-                    <span className="product-details">
-                      {product.categoryName} | Tồn kho: {product.currentStock}{" "}
-                      {product.unit}
-                    </span>
-                  </div>
-                  <div className="product-price">{product.sellingPrice}</div>
-                </div>
-              ))}
-            </div>
-          )}
+      </div>{" "}
+      {allProductsError && (
+        <div className="search-error">
+          Lỗi tải sản phẩm:{" "}
+          {typeof allProductsError === "string"
+            ? allProductsError
+            : allProductsError.message || "Không thể tải danh sách sản phẩm"}
         </div>
       )}
+    </div>
+  );
 
-      {productsError && (
-        <div className="search-error">Lỗi tìm kiếm: {productsError}</div>
+  const renderProductList = () => (
+    <div className="product-list-section">
+      <h3>Danh sách sản phẩm ({filteredProducts.length})</h3>
+
+      {allProductsLoading ? (
+        <div className="loading-message">Đang tải danh sách sản phẩm...</div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="no-products-message">
+          {searchQuery
+            ? "Không tìm thấy sản phẩm nào"
+            : "Không có sản phẩm nào"}
+        </div>
+      ) : (
+        <div className="product-list-table">
+          <table className="products-table">
+            <thead>
+              <tr>
+                <th>Mã SP</th>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th>Tồn kho</th>
+                <th>Đơn vị</th>
+                <th>Giá bán</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.map((product) => (
+                <tr key={product.id}>
+                  <td>{product.id}</td>
+                  <td>{product.name}</td>
+                  <td>{product.category?.name || "N/A"}</td>
+                  <td>{product.currentStock || 0}</td>
+                  <td>{product.unit}</td>
+                  <td>{product.sellingPrice?.toLocaleString() || "N/A"}</td>
+                  <td>
+                    <button
+                      onClick={() => handleAddProduct(product)}
+                      className="add-product-btn"
+                      disabled={selectedProducts.some(
+                        (p) => p.id === product.id
+                      )}
+                    >
+                      {selectedProducts.some((p) => p.id === product.id) ? (
+                        "Đã chọn"
+                      ) : (
+                        <>
+                          <FaPlus /> Chọn
+                        </>
+                      )}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
@@ -354,7 +382,7 @@ const StockCheckForm = () => {
         </label>
       </div>
     </div>
-  );
+  ); // Close renderCheckInformation
 
   const renderActionButtons = () => (
     <div className="kiemkhochitiet-buttons">
@@ -471,9 +499,14 @@ const StockCheckForm = () => {
   if (error && !batchLoading) {
     return (
       <div className="full-container">
+        {" "}
         <div className="error-container">
           <h2>Có lỗi xảy ra</h2>
-          <p>{error}</p>
+          <p>
+            {typeof error === "string"
+              ? error
+              : error.message || "Đã xảy ra lỗi không xác định"}
+          </p>
           <button onClick={() => clearError()}>Đóng</button>
         </div>
       </div>
@@ -483,7 +516,6 @@ const StockCheckForm = () => {
   // =============================================================================
   // MAIN RENDER
   // =============================================================================
-
   return (
     <div className="kiemkhochitiet-container full-container">
       <div className="form-header">
@@ -497,6 +529,9 @@ const StockCheckForm = () => {
 
       {/* Product Search */}
       {renderProductSearch()}
+
+      {/* Product List */}
+      {renderProductList()}
 
       {/* Main Content */}
       <div className="kiemkhochitiet-table-section">
@@ -523,7 +558,7 @@ const StockCheckForm = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .form-header {
           display: flex;
           justify-content: space-between;
@@ -646,15 +681,89 @@ const StockCheckForm = () => {
         .product-price {
           font-weight: bold;
           color: #007bff;
-        }
-
-        .search-error {
+        }        .search-error {
           padding: 10px;
           background: #f8d7da;
           color: #721c24;
           border: 1px solid #f5c6cb;
           border-radius: 4px;
           margin-top: 10px;
+        }
+
+        .product-list-section {
+          margin-bottom: 20px;
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          border: 1px solid #ddd;
+        }
+
+        .product-list-section h3 {
+          margin-top: 0;
+          color: #333;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 10px;
+        }
+
+        .loading-message,
+        .no-products-message {
+          text-align: center;
+          padding: 20px;
+          color: #666;
+          font-style: italic;
+        }
+
+        .product-list-table {
+          max-height: 400px;
+          overflow-y: auto;
+        }
+
+        .products-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+
+        .products-table th {
+          background: #f8f9fa;
+          padding: 10px;
+          text-align: left;
+          border: 1px solid #ddd;
+          font-weight: bold;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+
+        .products-table td {
+          padding: 10px;
+          border: 1px solid #ddd;
+        }
+
+        .products-table tr:hover {
+          background: #f8f9fa;
+        }
+
+        .add-product-btn {
+          background: #28a745;
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 12px;
+        }
+
+        .add-product-btn:hover:not(:disabled) {
+          background: #218838;
+        }
+
+        .add-product-btn:disabled {
+          background: #6c757d;
+          cursor: not-allowed;
         }
 
         .selected-products-section {

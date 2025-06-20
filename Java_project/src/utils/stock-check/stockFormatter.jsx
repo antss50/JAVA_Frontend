@@ -162,10 +162,8 @@ export const formatStockCheckResult = (result) => {
     checkStatus: result.checkStatus,
     statusLabel: formatCheckStatus(result.checkStatus),
     statusColor: getStatusColor(result.checkStatus),
-    message: result.message || "",
-
-    // Dates and metadata
-    checkDate: formatDateTime(result.checkDate),
+    message: result.message || "", // Dates and metadata
+    checkDate: formatDateTime(result.checkTimestamp || result.checkDate),
     checkedBy: result.checkedBy,
     checkReference: result.checkReference || "",
     notes: result.notes || "",
@@ -182,7 +180,7 @@ export const formatStockCheckResult = (result) => {
     rawActualQuantity: result.actualQuantity,
     rawVariance: result.variance,
     rawVariancePercentage: result.variancePercentage,
-    rawCheckDate: result.checkDate,
+    rawCheckDate: result.checkTimestamp || result.checkDate,
 
     // Display helpers
     hasVariance: Math.abs(result.variance || 0) > 0,

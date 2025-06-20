@@ -21,14 +21,36 @@ import {
 } from "../utils/bill-management/billFormatter";
 
 /**
- * Custom hook for bill management operations
+ * Custom hook for bi          if (response.success) {
+            console.log("Raw response data:", response.data);
+            const formattedAlerts = formatLowStockAlertsForDisplay(
+              response.data
+            );
+            console.log(
+              "useBillManagement - Formatted alerts:",
+              formattedAlerts
+            );
+            setLowStockAlerts(formattedAlerts);
+          } else {
+            console.log("API response not successful:", response);
+          }rations
  * @param {Object} options - Hook configuration options
  * @param {boolean} options.autoLoad - Whether to automatically load bills on mount
+ * @param {boolean} options.loadLowStockOnInit - Whether to load low stock alerts on init
  * @param {number} options.refreshInterval - Auto-refresh interval in milliseconds
  * @returns {Object} Hook state and functions
  */
 export const useBillManagement = (options = {}) => {
-  const { autoLoad = true, refreshInterval = null } = options;
+  const {
+    autoLoad = true,
+    loadLowStockOnInit = false,
+    refreshInterval = null,
+  } = options; // Refs for cleanup and tracking
+  const refreshIntervalRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const paginationRef = useRef(null);
+  const initialLoadDoneRef = useRef(false);
 
   // State Management
   const [bills, setBills] = useState([]);
@@ -67,13 +89,7 @@ export const useBillManagement = (options = {}) => {
     updating: null,
     deleting: null,
     paying: null,
-  });
-
-  // Refs for cleanup
-  const refreshIntervalRef = useRef(null);
-  const abortControllerRef = useRef(null);
-
-  // Utility function to update loading state
+  }); // Utility function to update loading state
   const setLoadingState = useCallback((key, value) => {
     setLoading((prev) => ({ ...prev, [key]: value }));
   }, []);
@@ -120,10 +136,10 @@ export const useBillManagement = (options = {}) => {
 
       try {
         const response = await billService.getBills(params);
-
         if (response.success) {
           const formattedBills =
             response.data.content?.map(formatBillForDisplay) || [];
+
           setBills(formattedBills);
 
           // Update pagination info
@@ -177,7 +193,6 @@ export const useBillManagement = (options = {}) => {
 
       try {
         const response = await billService.getBillById(billId);
-
         if (response.success) {
           const formattedBill = formatBillForDisplay(response.data);
           setCurrentBill(formattedBill);
@@ -206,7 +221,6 @@ export const useBillManagement = (options = {}) => {
 
       try {
         const response = await billService.getBillByNumber(billNumber);
-
         if (response.success) {
           const formattedBill = formatBillForDisplay(response.data);
           setBills([formattedBill]);
@@ -231,16 +245,16 @@ export const useBillManagement = (options = {}) => {
 
   /**
    * Load low stock alerts for purchase orders
-   */
-  const loadLowStockAlerts = useCallback(async () => {
+   */ const loadLowStockAlerts = useCallback(async () => {
     setLoadingState("lowStockAlerts", true);
     setErrorState("lowStockAlerts", null);
 
     try {
       const response = await billService.getLowStockAlerts();
-
+      console.log("loadLowStockAlerts - API response:", response);
       if (response.success) {
         const formattedAlerts = formatLowStockAlertsForDisplay(response.data);
+        console.log("loadLowStockAlerts - Formatted alerts:", formattedAlerts);
         setLowStockAlerts(formattedAlerts);
       } else {
         setErrorState("lowStockAlerts", response.error);
@@ -261,7 +275,6 @@ export const useBillManagement = (options = {}) => {
 
     try {
       const response = await billService.getBillsSummary();
-
       if (response.success) {
         setSummary(response.data);
       } else {
@@ -365,6 +378,19 @@ export const useBillManagement = (options = {}) => {
       setLoadingState("updating", true);
       setErrorState("updating", null);
 
+      console.log("=== HOOK UPDATE BILL DEBUG ===");
+      console.log("Bill ID:", billId);
+      console.log("Bill Data:", billData);
+      console.log(
+        "Existing lines:",
+        billData.billLines?.filter((line) => line.hasOwnProperty("id"))
+      );
+      console.log(
+        "New lines:",
+        billData.billLines?.filter((line) => !line.hasOwnProperty("id"))
+      );
+      console.log("==============================");
+
       try {
         const validation = validateBillData(billData);
         if (!validation.isValid) {
@@ -373,6 +399,10 @@ export const useBillManagement = (options = {}) => {
         }
 
         const formattedData = formatBillRequest(billData);
+        console.log("=== FORMATTED DATA ===");
+        console.log("Formatted data:", formattedData);
+        console.log("=====================");
+
         const response = await billService.updateBill(billId, formattedData);
 
         if (response.success) {
@@ -390,6 +420,7 @@ export const useBillManagement = (options = {}) => {
           return { success: false, error: response.error };
         }
       } catch (error) {
+        console.error("Hook updateBill error:", error);
         setErrorState("updating", "Failed to update bill");
         return { success: false, error: "Failed to update bill" };
       } finally {
@@ -526,16 +557,66 @@ export const useBillManagement = (options = {}) => {
       loadBills({ page: 0, sort });
     },
     [loadBills]
-  );
-
-  // Refresh Functions
-
+  ); // Refresh Functions
   /**
-   * Refresh all data
+   * Refresh core data (bills and summary only)
+   * Low stock alerts are loaded separately when needed
    */
   const refreshAll = useCallback(async () => {
-    await Promise.all([loadBills(), loadSummary(), loadLowStockAlerts()]);
-  }, [loadBills, loadSummary, loadLowStockAlerts]);
+    try {
+      const currentPagination = paginationRef.current || {
+        currentPage: 0,
+        pageSize: 10,
+        totalPages: 0,
+        totalElements: 0,
+        sort: "billDate,desc",
+      };
+
+      const [billsResponse, summaryResponse] = await Promise.all([
+        billService.getBills(currentPagination),
+        billService.getBillsSummary(),
+      ]);
+
+      if (billsResponse.success) {
+        const formattedBills =
+          billsResponse.data.content?.map(formatBillForDisplay) || [];
+        setBills(formattedBills);
+        setPagination((prev) => ({
+          ...prev,
+          currentPage:
+            typeof billsResponse.data.number === "number"
+              ? billsResponse.data.number
+              : 0,
+          pageSize:
+            typeof billsResponse.data.size === "number"
+              ? billsResponse.data.size
+              : prev.pageSize,
+          totalPages:
+            typeof billsResponse.data.totalPages === "number"
+              ? billsResponse.data.totalPages
+              : 1,
+          totalElements:
+            typeof billsResponse.data.totalElements === "number"
+              ? billsResponse.data.totalElements
+              : 0,
+          isFirst:
+            typeof billsResponse.data.first === "boolean"
+              ? billsResponse.data.first
+              : undefined,
+          isLast:
+            typeof billsResponse.data.last === "boolean"
+              ? billsResponse.data.last
+              : undefined,
+        }));
+      }
+
+      if (summaryResponse.success) {
+        setSummary(summaryResponse.data);
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+  }, []); // Empty dependency to prevent infinite loops
 
   /**
    * Refresh bills only
@@ -544,6 +625,12 @@ export const useBillManagement = (options = {}) => {
     loadBills();
   }, [loadBills]);
 
+  /**
+   * Refresh all including low stock alerts
+   */
+  const refreshAllWithAlerts = useCallback(async () => {
+    await Promise.all([loadBills(), loadSummary(), loadLowStockAlerts()]);
+  }, [loadBills, loadSummary, loadLowStockAlerts]);
   // Auto-refresh setup
   useEffect(() => {
     if (refreshInterval && refreshInterval > 0) {
@@ -555,18 +642,94 @@ export const useBillManagement = (options = {}) => {
         }
       };
     }
-  }, [refreshInterval, refreshAll]);
-
-  // Auto-load on mount
+  }, [refreshInterval, refreshAll]); // Auto-load on mount - only load core data by default
   useEffect(() => {
-    if (autoLoad) {
-      refreshAll();
-    }
-  }, [autoLoad, refreshAll]);
+    const loadInitialData = async () => {
+      // Prevent duplicate loading in React StrictMode
+      if (initialLoadDoneRef.current) {
+        return;
+      }
+      initialLoadDoneRef.current = true;
 
+      if (autoLoad) {
+        try {
+          const [billsResponse, summaryResponse] = await Promise.all([
+            billService.getBills(pagination),
+            billService.getBillsSummary(),
+          ]);
+          if (billsResponse.success) {
+            const formattedBills =
+              billsResponse.data.content?.map(formatBillForDisplay) || [];
+            setBills(formattedBills);
+            setPagination((prev) => ({
+              ...prev,
+              currentPage:
+                typeof billsResponse.data.number === "number"
+                  ? billsResponse.data.number
+                  : 0,
+              pageSize:
+                typeof billsResponse.data.size === "number"
+                  ? billsResponse.data.size
+                  : prev.pageSize,
+              totalPages:
+                typeof billsResponse.data.totalPages === "number"
+                  ? billsResponse.data.totalPages
+                  : 1,
+              totalElements:
+                typeof billsResponse.data.totalElements === "number"
+                  ? billsResponse.data.totalElements
+                  : 0,
+              isFirst:
+                typeof billsResponse.data.first === "boolean"
+                  ? billsResponse.data.first
+                  : undefined,
+              isLast:
+                typeof billsResponse.data.last === "boolean"
+                  ? billsResponse.data.last
+                  : undefined,
+            }));
+          }
+          if (summaryResponse.success) {
+            setSummary(summaryResponse.data);
+          }
+        } catch (error) {
+          console.error("Error loading initial data:", error);
+        }
+      }
+      if (loadLowStockOnInit) {
+        try {
+          const response = await billService.getLowStockAlerts();
+          console.log(
+            "useBillManagement - Low stock alerts response:",
+            response
+          );
+          if (response.success) {
+            console.log("Raw response data:", response.data);
+            const formattedAlerts = formatLowStockAlertsForDisplay(
+              response.data
+            );
+            console.log(
+              "useBillManagement - Formatted alerts:",
+              formattedAlerts
+            );
+            setLowStockAlerts(formattedAlerts);
+          } else {
+            console.log("API response not successful:", response);
+          }
+        } catch (error) {
+          console.error("Error loading low stock alerts:", error);
+        }
+      }
+    };
+
+    // Only load once
+    loadInitialData();
+  }, []); // Empty dependency array - only run once on mount
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
+      initialLoadDoneRef.current = false; // Reset for next mount
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
       }
@@ -575,6 +738,11 @@ export const useBillManagement = (options = {}) => {
       }
     };
   }, []);
+
+  // Update pagination ref when pagination state changes
+  useEffect(() => {
+    paginationRef.current = pagination;
+  }, [pagination]);
 
   // Computed values
   const paginationInfo = formatPaginationInfo(pagination);
@@ -624,11 +792,10 @@ export const useBillManagement = (options = {}) => {
     previousPage,
     goToPage,
     changePageSize,
-    changeSort,
-
-    // Utility functions
+    changeSort, // Utility functions
     refreshAll,
     refreshBills,
+    refreshAllWithAlerts,
     clearError,
     clearAllErrors,
 

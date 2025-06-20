@@ -5,16 +5,17 @@ import { useNavigate } from "react-router-dom";
 import {
   FaSearch,
   FaFilter,
-  FaDownload,
   FaPlus,
   FaEye,
+  FaEdit,
   FaChevronDown,
   FaChevronRight,
   FaCheck,
   FaTimes,
-  FaExclamationTriangle
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import useStockCheck from "../../../hooks/useStockCheck";
+import { useStockLedger } from "../../../hooks/useStockLedger";
 import "../product.css";
 
 const StockCheckManagement = () => {
@@ -45,9 +46,9 @@ const StockCheckManagement = () => {
 
     // Operations
     fetchStockCheckResults,
-    fetchGroupedStockCheckResults,
     fetchResultsByStatus,
     fetchResultsByDateRange,
+    fetchAllStockCheckResults,
     processVariance,
     exportToCSV,
     applyFilters,
@@ -57,6 +58,9 @@ const StockCheckManagement = () => {
     switchViewMode,
     toggleSummaryExpansion,
   } = useStockCheck();
+
+  // Stock ledger operations
+  const { adjustStock } = useStockLedger();
 
   // =============================================================================
   // LOCAL STATE
@@ -69,6 +73,76 @@ const StockCheckManagement = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Stock adjustment modal state
+  const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
+  const [adjustmentItem, setAdjustmentItem] = useState(null);
+  const [adjustmentLoading, setAdjustmentLoading] = useState(false);
+  const [adjustmentData, setAdjustmentData] = useState({
+    quantityChange: "",
+    reason: "",
+    reference: "",
+  });
+
+  // =============================================================================
+  // HELPER FUNCTIONS
+  // =============================================================================
+
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) {
+      console.warn("formatDateTime received empty/null value:", dateTimeString);
+      return "N/A";
+    }
+
+    try {
+      const date = new Date(dateTimeString);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid datetime string:", dateTimeString);
+        return "Invalid Date";
+      }
+
+      // Format as DD/MM/YYYY HH:mm
+      return date.toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch (error) {
+      console.error(
+        "Error formatting datetime:",
+        error,
+        "Input:",
+        dateTimeString
+      );
+      return "Invalid Date";
+    }
+  };
+
+  const formatDate = (dateTimeString) => {
+    if (!dateTimeString) {
+      console.warn("formatDate received empty/null value:", dateTimeString);
+      return "N/A";
+    }
+
+    try {
+      const date = new Date(dateTimeString);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date string:", dateTimeString);
+        return "Invalid Date";
+      }
+
+      // Format as DD/MM/YYYY
+      return date.toLocaleDateString("vi-VN");
+    } catch (error) {
+      console.error("Error formatting date:", error, "Input:", dateTimeString);
+      return "Invalid Date";
+    }
+  };
 
   // =============================================================================
   // EVENT HANDLERS
@@ -102,20 +176,102 @@ const StockCheckManagement = () => {
     }
   };
 
-  const handleExport = async () => {
-    try {
-      await exportToCSV({
-        startDate: dateFilter.startDate || undefined,
-        endDate: dateFilter.endDate || undefined,
-      });
-    } catch (err) {
-      alert("Failed to export data");
-    }
-  };
-
   const handlePageChange = async (page) => {
     setCurrentPage(page);
     await fetchStockCheckResults({ page: page - 1 });
+  };
+
+  const handleOpenAdjustmentModal = (item) => {
+    setAdjustmentItem(item);
+    // Pre-fill suggested adjustment based on variance
+    const suggestedChange =
+      item.checkStatus === "SHORTAGE"
+        ? Math.abs(item.variance)
+        : item.checkStatus === "OVERAGE"
+        ? -Math.abs(item.variance)
+        : 0;
+
+    setAdjustmentData({
+      quantityChange: suggestedChange.toString(),
+      reason: `Stock adjustment for ${item.checkStatus.toLowerCase()} found during stock check`,
+      reference: `Stock Check - ${item.productName}`,
+    });
+    setShowAdjustmentModal(true);
+  };
+
+  const handleCloseAdjustmentModal = () => {
+    if (adjustmentLoading) return; // Prevent closing while processing
+
+    setShowAdjustmentModal(false);
+    setAdjustmentItem(null);
+    setAdjustmentLoading(false);
+    setAdjustmentData({
+      quantityChange: "",
+      reason: "",
+      reference: "",
+    });
+  };
+
+  const handleAdjustmentSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !adjustmentItem ||
+      !adjustmentData.quantityChange ||
+      !adjustmentData.reason
+    ) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    setAdjustmentLoading(true);
+
+    try {
+      const adjustmentPayload = {
+        productId: adjustmentItem.productId || adjustmentItem.id, // Handle different ID formats
+        quantityChange: parseFloat(adjustmentData.quantityChange),
+        reason: adjustmentData.reason,
+        reference: adjustmentData.reference,
+      };
+
+      // Make the adjustment
+      const result = await adjustStock(adjustmentPayload);
+
+      // Show success message with details
+      alert(
+        `Stock adjustment completed successfully!\n\nProduct: ${
+          adjustmentItem.productName
+        }\nAdjustment: ${adjustmentData.quantityChange}\nMovement Type: ${
+          result?.movementType || "ADJUSTMENT"
+        }`
+      );
+
+      handleCloseAdjustmentModal();
+
+      // Optimistically update the item status in the UI
+      // Since we've successfully adjusted the stock, this item should now show as "MATCH"
+      // We'll refresh the data to get the actual updated values from the server
+      setTimeout(async () => {
+        try {
+          await fetchAllStockCheckResults();
+        } catch (refreshError) {
+          console.warn(
+            "Failed to refresh data after stock adjustment:",
+            refreshError
+          );
+          // Even if refresh fails, the adjustment was successful
+        }
+      }, 500); // Small delay to allow backend to process
+    } catch (error) {
+      console.error("Stock adjustment failed:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unknown error occurred";
+      alert(`Failed to adjust stock: ${errorMessage}`);
+    } finally {
+      setAdjustmentLoading(false);
+    }
   };
 
   // =============================================================================
@@ -132,9 +288,9 @@ const StockCheckManagement = () => {
           className="kiemkho-input"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyPress={(e) => e.key === "Enter" && handleSearch()}
         />
-          <button onClick={handleSearch} className="search-btn">
+        <button onClick={handleSearch} className="search-btn">
           <FaSearch /> Tìm kiếm
         </button>
         <button
@@ -220,13 +376,6 @@ const StockCheckManagement = () => {
       <h2 className="kiemkho-title">QUẢN LÝ KIỂM KHO</h2>
       <div className="header-actions">
         <button
-          onClick={handleExport}
-          className="export-btn"
-          disabled={loading}
-        >
-          <FaDownload /> Xuất Excel
-        </button>
-        <button
           className="kiemkho-button"
           onClick={() => navigate("/hang-hoa/kiem-kho-moi")}
         >
@@ -259,59 +408,64 @@ const StockCheckManagement = () => {
             </td>
           </tr>
         ) : (
-          stockCheckResults.map((result) => (
-            <tr
-              key={
-                result.checkResultId ||
-                result.productId ||
-                result.checkReference
-              }
-              className={`status-${result.statusColor}`}
-            >
-              <td>{result.checkReference}</td>
-              <td>{result.productName}</td>
-              <td>{result.checkDate}</td>
-              <td>{result.expectedQuantity}</td>
-              <td>{result.actualQuantity}</td>
-              <td className={result.hasVariance ? "variance" : ""}>
-                {result.variance}
-                {result.variancePercentage && ` (${result.variancePercentage})`}
-              </td>
-              <td>
-                <span className={`status-badge ${result.statusColor}`}>
-                  {result.statusLabel}
-                </span>
-                {result.requiresAttention && (
-                  <span className="attention-badge">Cần xử lý</span>
-                )}
-              </td>
-              <td>{result.checkedBy}</td>
-              <td>
-                <div className="action-buttons">
-                  <button
-                    onClick={() =>
-                      navigate(`/hang-hoa/kiem-kho/${result.checkResultId}`)
-                    }
-                    className="view-btn"
-                    title="Xem chi tiết"
-                  >
-                    <FaEye />
-                  </button>
+          stockCheckResults.map((result, index) => {
+            return (
+              <tr
+                key={
+                  result.checkResultId ||
+                  result.productId ||
+                  result.checkReference
+                }
+                className={`status-${result.statusColor}`}
+              >
+                <td>{result.checkReference}</td>
+                <td>{result.productName}</td>
+                <td>
+                  {formatDateTime(result.checkDate || result.checkTimestamp)}
+                </td>
+                <td>{result.expectedQuantity}</td>
+                <td>{result.actualQuantity}</td>
+                <td className={result.hasVariance ? "variance" : ""}>
+                  {result.variance}
+                  {result.variancePercentage &&
+                    ` (${result.variancePercentage})`}
+                </td>
+                <td>
+                  <span className={`status-badge ${result.statusColor}`}>
+                    {result.statusLabel}
+                  </span>
                   {result.requiresAttention && (
+                    <span className="attention-badge">Cần xử lý</span>
+                  )}
+                </td>
+                <td>{result.checkedBy}</td>
+                <td>
+                  <div className="action-buttons">
                     <button
                       onClick={() =>
-                        handleProcessVariance(result.checkResultId)
+                        navigate(`/hang-hoa/kiem-kho/${result.checkResultId}`)
                       }
-                      className="process-btn"
-                      title="Xử lý chênh lệch"
+                      className="view-btn"
+                      title="Xem chi tiết"
                     >
-                      <FaEdit />
+                      <FaEye />
                     </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))
+                    {result.requiresAttention && (
+                      <button
+                        onClick={() =>
+                          handleProcessVariance(result.checkResultId)
+                        }
+                        className="process-btn"
+                        title="Xử lý chênh lệch"
+                      >
+                        <FaEdit />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })
         )}
       </tbody>
     </table>
@@ -344,24 +498,34 @@ const StockCheckManagement = () => {
             const isExpanded = expandedSummaries.has(summary.referenceId);
             return (
               <React.Fragment key={`summary-${summary.referenceId || index}`}>
-                <tr className={`status-row ${isExpanded ? 'expanded' : ''}`}>
-                  <td>{summary.referenceId || 'N/A'}</td>
-                  <td>{new Date(summary.checkTimestamp).toLocaleDateString()}</td>
-                  <td>{summary.checkedBy || 'N/A'}</td>
+                <tr className={`status-row ${isExpanded ? "expanded" : ""}`}>
+                  <td>{summary.referenceId || "N/A"}</td>
+                  <td>{formatDate(summary.checkTimestamp)}</td>
+                  <td>{summary.checkedBy || "N/A"}</td>
                   <td>{summary.totalItems || 0}</td>
-                  <td className={summary.itemsWithVariance > 0 ? "variance" : ""}>
+                  <td
+                    className={summary.itemsWithVariance > 0 ? "variance" : ""}
+                  >
                     {summary.itemsWithVariance || 0}
                   </td>
                   <td>
-                    {summary.totalItems > 0 
-                      ? `${Math.round(((summary.totalItems - summary.itemsWithVariance) / summary.totalItems) * 100)}%`
-                      : '100%'}
+                    {summary.totalItems > 0
+                      ? `${Math.round(
+                          ((summary.totalItems - summary.itemsWithVariance) /
+                            summary.totalItems) *
+                            100
+                        )}%`
+                      : "100%"}
                   </td>
                   <td>
-                    <span className={`status-badge ${
-                      summary.itemsWithVariance > 0 ? 'warning' : 'success'
-                    }`}>
-                      {summary.itemsWithVariance > 0 ? 'Có chênh lệch' : 'Đã khớp'}
+                    <span
+                      className={`status-badge ${
+                        summary.itemsWithVariance > 0 ? "warning" : "success"
+                      }`}
+                    >
+                      {summary.itemsWithVariance > 0
+                        ? "Có chênh lệch"
+                        : "Đã khớp"}
                     </span>
                     {summary.itemsWithVariance > 0 && (
                       <span className="attention-badge">Cần xử lý</span>
@@ -370,7 +534,9 @@ const StockCheckManagement = () => {
                   <td>
                     <div className="action-buttons">
                       <button
-                        onClick={() => toggleSummaryExpansion(summary.referenceId)}
+                        onClick={() =>
+                          toggleSummaryExpansion(summary.referenceId)
+                        }
                         className="view-btn"
                         title={isExpanded ? "Ẩn chi tiết" : "Xem chi tiết"}
                       >
@@ -380,42 +546,71 @@ const StockCheckManagement = () => {
                     </div>
                   </td>
                 </tr>
-                {isExpanded && summary.items && summary.items.map((item, itemIndex) => (
-                  <tr 
-                    key={`detail-${item.id || itemIndex}-${summary.referenceId}`}
-                    className="detail-row"
-                  >
-                    <td colSpan="2">{item.productName || 'N/A'}</td>
-                    <td>SL dự kiến: {item.expectedQuantity}</td>
-                    <td>SL thực tế: {item.actualQuantity}</td>
-                    <td colSpan="2">
-                      Chênh lệch: 
-                      <span className={item.variance !== 0 ? 'variance' : ''}>
-                        {item.variance > 0 ? `+${item.variance}` : item.variance}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${
-                        item.checkStatus === 'MATCH' ? 'success' : 
-                        item.checkStatus === 'OVERAGE' ? 'warning' : 'error'
-                      }`}>
-                        {item.checkStatus === 'MATCH' ? 'Khớp' : 
-                         item.checkStatus === 'OVERAGE' ? 'Thừa' : 'Thiếu'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          onClick={() => navigate(`/hang-hoa/kiem-kho/chi-tiet/${item.id}`)}
-                          className="view-btn"
-                          title="Xem chi tiết"
+                {isExpanded &&
+                  summary.items &&
+                  summary.items.map((item, itemIndex) => (
+                    <tr
+                      key={`detail-${item.id || itemIndex}-${
+                        summary.referenceId
+                      }`}
+                      className="detail-row"
+                    >
+                      <td colSpan="2">{item.productName || "N/A"}</td>
+                      <td>SL dự kiến: {item.expectedQuantity}</td>
+                      <td>SL thực tế: {item.actualQuantity}</td>
+                      <td colSpan="2">
+                        Chênh lệch:
+                        <span className={item.variance !== 0 ? "variance" : ""}>
+                          {item.variance > 0
+                            ? `+${item.variance}`
+                            : item.variance}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`status-badge ${
+                            item.checkStatus === "MATCH"
+                              ? "success"
+                              : item.checkStatus === "OVERAGE"
+                              ? "warning"
+                              : "error"
+                          }`}
                         >
-                          <FaEye />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {item.checkStatus === "MATCH"
+                            ? "Khớp"
+                            : item.checkStatus === "OVERAGE"
+                            ? "Thừa"
+                            : "Thiếu"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          {item.checkStatus === "SHORTAGE" ||
+                          item.checkStatus === "OVERAGE" ? (
+                            <button
+                              onClick={() => handleOpenAdjustmentModal(item)}
+                              className="adjust-btn"
+                              title="Điều chỉnh tồn kho"
+                            >
+                              <FaEye />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                navigate(
+                                  `/hang-hoa/kiem-kho/chi-tiet/${item.id}`
+                                )
+                              }
+                              className="view-btn"
+                              title="Xem chi tiết"
+                            >
+                              <FaEye />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </React.Fragment>
             );
           })
@@ -455,6 +650,143 @@ const StockCheckManagement = () => {
         >
           Sau
         </button>
+      </div>
+    );
+  };
+
+  // Stock Adjustment Modal
+  const renderAdjustmentModal = () => {
+    if (!showAdjustmentModal || !adjustmentItem) return null;
+
+    return (
+      <div
+        className="modal-overlay"
+        onClick={adjustmentLoading ? undefined : handleCloseAdjustmentModal}
+      >
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>Điều chỉnh tồn kho</h3>
+            <button
+              className="close-btn"
+              onClick={handleCloseAdjustmentModal}
+              disabled={adjustmentLoading}
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="modal-body">
+            <div className="product-info">
+              <h4>{adjustmentItem.productName}</h4>
+              <p>
+                <strong>Trạng thái:</strong>
+                <span
+                  className={`status-badge ${
+                    adjustmentItem.checkStatus === "OVERAGE"
+                      ? "warning"
+                      : "error"
+                  }`}
+                >
+                  {adjustmentItem.checkStatus === "OVERAGE" ? "Thừa" : "Thiếu"}
+                </span>
+              </p>
+              <p>
+                <strong>Tồn kho dự kiến:</strong>{" "}
+                {adjustmentItem.expectedQuantity}
+              </p>
+              <p>
+                <strong>Tồn kho thực tế:</strong>{" "}
+                {adjustmentItem.actualQuantity}
+              </p>
+              <p>
+                <strong>Chênh lệch:</strong>
+                <span className="variance">
+                  {adjustmentItem.variance > 0
+                    ? `+${adjustmentItem.variance}`
+                    : adjustmentItem.variance}
+                </span>
+              </p>
+            </div>
+
+            <form onSubmit={handleAdjustmentSubmit}>
+              <div className="form-group">
+                <label htmlFor="quantityChange">Số lượng điều chỉnh *</label>
+                <input
+                  type="number"
+                  id="quantityChange"
+                  value={adjustmentData.quantityChange}
+                  onChange={(e) =>
+                    setAdjustmentData((prev) => ({
+                      ...prev,
+                      quantityChange: e.target.value,
+                    }))
+                  }
+                  placeholder="Nhập số lượng (dương: tăng, âm: giảm)"
+                  disabled={adjustmentLoading}
+                  required
+                />
+                <small className="help-text">
+                  {adjustmentItem.checkStatus === "SHORTAGE"
+                    ? "Số dương để bổ sung tồn kho"
+                    : "Số âm để giảm tồn kho thừa"}
+                </small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reason">Lý do điều chỉnh *</label>
+                <textarea
+                  id="reason"
+                  value={adjustmentData.reason}
+                  onChange={(e) =>
+                    setAdjustmentData((prev) => ({
+                      ...prev,
+                      reason: e.target.value,
+                    }))
+                  }
+                  placeholder="Nhập lý do điều chỉnh"
+                  disabled={adjustmentLoading}
+                  required
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reference">Tham chiếu</label>
+                <input
+                  type="text"
+                  id="reference"
+                  value={adjustmentData.reference}
+                  onChange={(e) =>
+                    setAdjustmentData((prev) => ({
+                      ...prev,
+                      reference: e.target.value,
+                    }))
+                  }
+                  placeholder="Mã tham chiếu (tùy chọn)"
+                  disabled={adjustmentLoading}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={handleCloseAdjustmentModal}
+                  disabled={adjustmentLoading}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={adjustmentLoading}
+                >
+                  {adjustmentLoading ? "Đang xử lý..." : "Xác nhận điều chỉnh"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     );
   };
@@ -509,6 +841,9 @@ const StockCheckManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Stock Adjustment Modal */}
+      {renderAdjustmentModal()}
 
       <style>{`
         .search-inputs {
@@ -780,6 +1115,177 @@ const StockCheckManagement = () => {
           border-radius: 4px;
           cursor: pointer;
           margin-top: 20px;
+        }
+
+        /* Stock Adjustment Modal Styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal-content {
+          background: white;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 500px;
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 20px 0 20px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h3 {
+          margin: 0;
+          color: #333;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+          color: #666;
+          padding: 5px;
+        }
+
+        .close-btn:hover {
+          color: #333;
+        }
+
+        .modal-body {
+          padding: 20px;
+        }
+
+        .product-info {
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 6px;
+          margin-bottom: 20px;
+        }
+
+        .product-info h4 {
+          margin: 0 0 10px 0;
+          color: #333;
+        }
+
+        .product-info p {
+          margin: 5px 0;
+          color: #666;
+        }
+
+        .form-group {
+          margin-bottom: 15px;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .help-text {
+          display: block;
+          margin-top: 5px;
+          color: #6c757d;
+          font-size: 12px;
+        }
+
+        .modal-actions {
+          display: flex;
+          gap: 10px;
+          justify-content: flex-end;
+          margin-top: 20px;
+          padding-top: 15px;
+          border-top: 1px solid #eee;
+        }
+
+        .cancel-btn {
+          background: #6c757d;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+
+        .submit-btn {
+          background: #28a745;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+          background: #5a6268;
+        }
+
+        .submit-btn:hover {
+          background: #218838;
+        }
+
+        .adjust-btn {
+          background: #ffc107;
+          color: #212529;
+          border: none;
+          padding: 5px 8px;
+          border-radius: 3px;
+          cursor: pointer;
+          font-size: 12px;
+        }
+
+        .adjust-btn:hover {
+          background: #e0a800;
+        }
+
+        /* Disabled states for modal form */
+        .form-group input:disabled,
+        .form-group textarea:disabled {
+          background-color: #f8f9fa;
+          color: #6c757d;
+          cursor: not-allowed;
+        }
+
+        .modal-actions button:disabled {
+          background-color: #6c757d;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        .submit-btn:disabled {
+          background-color: #6c757d !important;
         }
       `}</style>
     </div>

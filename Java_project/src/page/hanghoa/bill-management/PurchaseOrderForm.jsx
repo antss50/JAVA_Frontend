@@ -9,11 +9,12 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import useBillManagement from "../../../hooks/useBillManagement";
+import usePartyManagement from "../../../hooks/usePartyManagement";
+import ToastMessage from "../../../component/ToastMessage";
 import "../product.css";
 
 const PurchaseOrderForm = () => {
   const navigate = useNavigate();
-
   const {
     lowStockAlerts,
     loading,
@@ -21,7 +22,21 @@ const PurchaseOrderForm = () => {
     loadLowStockAlerts,
     createPurchaseOrder,
     clearError,
-  } = useBillManagement();
+  } = useBillManagement({
+    autoLoad: false,
+    loadLowStockOnInit: true,
+  });
+  // Initialize party management for suppliers
+  const {
+    parties: suppliers,
+    loading: partyLoading,
+    error: partyError,
+    loadParties,
+    setSelectedType,
+  } = usePartyManagement({
+    initialType: "SUPPLIER",
+    autoLoad: true, // Auto-load suppliers on mount
+  });
 
   // Local state
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -30,9 +45,6 @@ const PurchaseOrderForm = () => {
     notes: "",
     orderDate: new Date().toISOString().split("T")[0],
   });
-  // TODO: Implement vendor API when available
-  // No documented API for fetching vendors in the final_flow_document.md
-  const [vendors, setVendors] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
 
@@ -40,17 +52,22 @@ const PurchaseOrderForm = () => {
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
-
   const showToast = (message, variant = "success") => {
     setToastMessage(message);
     setToastVariant(variant);
     setToastShow(true);
     setTimeout(() => setToastShow(false), 3000);
   };
-  // Load low stock alerts on component mount
+
+  // Debug effect to log lowStockAlerts data
   useEffect(() => {
-    loadLowStockAlerts();
-  }, []); // Empty dependency array to only run once on mount
+    console.log("PurchaseOrderForm - lowStockAlerts updated:", {
+      lowStockAlerts,
+      loading: loading.lowStockAlerts,
+      error: errors.lowStockAlerts,
+      length: lowStockAlerts?.length || 0,
+    });
+  }, [lowStockAlerts, loading.lowStockAlerts, errors.lowStockAlerts]);
 
   // Event handlers
   const handleSelectProduct = (alert) => {
@@ -149,10 +166,8 @@ const PurchaseOrderForm = () => {
     if (!orderDetails.partyId) {
       showToast("Vui lòng chọn nhà cung cấp", "error");
       return;
-    }
-
-    // Check if vendor data is available
-    if (vendors.length === 0) {
+    } // Check if vendor data is available
+    if (suppliers.length === 0) {
       showToast(
         "Không có dữ liệu nhà cung cấp. Vui lòng liên hệ quản trị viên.",
         "error"
@@ -237,108 +252,140 @@ const PurchaseOrderForm = () => {
   );
 
   // Render helper functions
-  const renderLowStockAlertsSection = () => (
-    <div className="kiemkho-search-box">
-      <h4>Sản phẩm thiếu hàng</h4>
+  const renderLowStockAlertsSection = () => {
+    console.log("renderLowStockAlertsSection - Current state:", {
+      lowStockAlerts,
+      lowStockAlertsLength: lowStockAlerts?.length,
+      lowStockAlertsType: typeof lowStockAlerts,
+      loading: loading.lowStockAlerts,
+      error: errors.lowStockAlerts,
+      selectedProductsLength: selectedProducts.length,
+    });
 
-      <div style={{ marginBottom: "16px" }}>
-        <button
-          onClick={handleSelectAll}
-          className="kiemkho-button"
-          style={{ width: "100%", marginBottom: "8px" }}
-        >
-          {selectedProducts.length === lowStockAlerts.length
-            ? "Bỏ chọn tất cả"
-            : "Chọn tất cả"}
-        </button>
+    return (
+      <div className="kiemkho-search-box">
+        <h4>Sản phẩm thiếu hàng</h4>
 
-        <p style={{ fontSize: "14px", color: "#6c757d", margin: 0 }}>
-          Đã chọn: {selectedProducts.length} / {lowStockAlerts.length} sản phẩm
-        </p>
-      </div>
+        <div style={{ marginBottom: "16px" }}>
+          <button
+            onClick={handleSelectAll}
+            className="kiemkho-button"
+            style={{ width: "100%", marginBottom: "8px" }}
+          >
+            {selectedProducts.length === lowStockAlerts.length
+              ? "Bỏ chọn tất cả"
+              : "Chọn tất cả"}
+          </button>
 
-      {loading.lowStockAlerts ? (
-        <div style={{ textAlign: "center", padding: "20px" }}>Đang tải...</div>
-      ) : errors.lowStockAlerts ? (
-        <div style={{ textAlign: "center", padding: "20px", color: "#dc3545" }}>
-          Lỗi: {errors.lowStockAlerts}
+          <p style={{ fontSize: "14px", color: "#6c757d", margin: 0 }}>
+            Đã chọn: {selectedProducts.length} / {lowStockAlerts.length} sản
+            phẩm
+          </p>
         </div>
-      ) : lowStockAlerts.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "20px", color: "#28a745" }}>
-          <FaExclamationTriangle style={{ marginBottom: "8px" }} />
-          <br />
-          Không có sản phẩm thiếu hàng
-        </div>
-      ) : (
-        <div
-          className="low-stock-list"
-          style={{ maxHeight: "400px", overflowY: "auto" }}
-        >
-          {lowStockAlerts.map((alert) => {
-            const isSelected = selectedProducts.some(
-              (p) => p.productId === alert.productId
+
+        {loading.lowStockAlerts ? (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            Đang tải...
+          </div>
+        ) : errors.lowStockAlerts ? (
+          <div
+            style={{ textAlign: "center", padding: "20px", color: "#dc3545" }}
+          >
+            Lỗi: {errors.lowStockAlerts}
+          </div>
+        ) : lowStockAlerts.length === 0 ? (
+          <div
+            style={{ textAlign: "center", padding: "20px", color: "#28a745" }}
+          >
+            <FaExclamationTriangle style={{ marginBottom: "8px" }} />
+            <br />
+            Không có sản phẩm thiếu hàng
+          </div>
+        ) : (
+          (() => {
+            console.log(
+              "About to render lowStockAlerts.map with:",
+              lowStockAlerts
             );
-
             return (
               <div
-                key={alert.productId}
-                className={`low-stock-item ${isSelected ? "selected" : ""}`}
-                onClick={() => handleSelectProduct(alert)}
-                style={{
-                  padding: "12px",
-                  marginBottom: "8px",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  backgroundColor: isSelected ? "#e7f3ff" : "#f8f9fa",
-                  borderColor: isSelected ? "#007bff" : "#ccc",
-                }}
+                className="low-stock-list"
+                style={{ maxHeight: "400px", overflowY: "auto" }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <h6 style={{ margin: "0 0 4px 0", fontWeight: "bold" }}>
-                      {alert.productName}
-                    </h6>
-                    <div style={{ fontSize: "12px", color: "#6c757d" }}>
-                      <div>
-                        Tồn kho: {alert.currentStock} {alert.unit}
-                      </div>
-                      <div>
-                        Mức tồn tối thiểu: {alert.reorderLevel} {alert.unit}
-                      </div>
-                      <div>
-                        Thiếu: {alert.reorderLevel - alert.currentStock}{" "}
-                        {alert.unit}
-                      </div>
-                    </div>
-                  </div>
+                {lowStockAlerts.map((alert) => {
+                  console.log("Mapping alert:", alert);
+                  const isSelected = selectedProducts.some(
+                    (p) => p.productId === alert.productId
+                  );
 
-                  <span
-                    className={`alert-badge ${alert.alertBadge?.class}`}
-                    style={{
-                      backgroundColor: alert.alertBadge?.color,
-                      color: "white",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                      fontSize: "10px",
-                    }}
-                  >
-                    {alert.alertBadge?.text}
-                  </span>
-                </div>
+                  return (
+                    <div
+                      key={alert.productId}
+                      className={`low-stock-item ${
+                        isSelected ? "selected" : ""
+                      }`}
+                      onClick={() => handleSelectProduct(alert)}
+                      style={{
+                        padding: "12px",
+                        marginBottom: "8px",
+                        border: "1px solid #ccc",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        backgroundColor: isSelected ? "#e7f3ff" : "#f8f9fa",
+                        borderColor: isSelected ? "#007bff" : "#ccc",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <h6
+                            style={{ margin: "0 0 4px 0", fontWeight: "bold" }}
+                          >
+                            {alert.productName}
+                          </h6>
+                          <div style={{ fontSize: "12px", color: "#6c757d" }}>
+                            <div>
+                              Tồn kho: {alert.currentStock} {alert.unit}
+                            </div>
+                            <div>
+                              Mức tồn tối thiểu: {alert.reorderLevel}{" "}
+                              {alert.unit}
+                            </div>
+                            <div>
+                              Thiếu: {alert.reorderLevel - alert.currentStock}{" "}
+                              {alert.unit}
+                            </div>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`alert-badge ${alert.alertBadge?.class}`}
+                          style={{
+                            backgroundColor: alert.alertBadge?.color,
+                            color: "white",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            fontSize: "10px",
+                          }}
+                        >
+                          {alert.alertBadge?.text}
+                        </span>
+                      </div>{" "}
+                    </div>
+                  );
+                })}
               </div>
             );
-          })}
-        </div>
-      )}
-    </div>
-  );
+          })()
+        )}
+      </div>
+    );
+  };
 
   const renderSelectedProductsTable = () => (
     <div className="selected-products-section">
@@ -465,6 +512,7 @@ const PurchaseOrderForm = () => {
   const renderOrderInformation = () => (
     <div className="kiemkhochitiet-info">
       <div className="info-section">
+        {" "}
         <label>
           Nhà cung cấp <span style={{ color: "#dc3545" }}>*</span>
           <select
@@ -480,22 +528,46 @@ const PurchaseOrderForm = () => {
               border: "1px solid #ccc",
             }}
             required
+            disabled={partyLoading}
           >
+            {" "}
             <option value="">Chọn nhà cung cấp...</option>
-            {vendors.length === 0 ? (
+            {suppliers.length === 0 ? (
               <option value="" disabled>
-                Không có dữ liệu nhà cung cấp
+                {partyLoading ? "Đang tải..." : "Không có dữ liệu nhà cung cấp"}
               </option>
             ) : (
-              vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
-                  {vendor.name}
+              suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
                 </option>
               ))
             )}
           </select>
+          {partyError && (
+            <div
+              style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}
+            >
+              {" "}
+              Lỗi tải nhà cung cấp: {partyError.message || "Không xác định"}
+              <button
+                onClick={loadParties}
+                style={{
+                  marginLeft: "8px",
+                  padding: "2px 6px",
+                  fontSize: "10px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "2px",
+                  cursor: "pointer",
+                }}
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
         </label>
-
         <label>
           Ngày đặt hàng
           <input
@@ -513,7 +585,6 @@ const PurchaseOrderForm = () => {
             }}
           />
         </label>
-
         <label>
           Tổng số lượng
           <input
@@ -531,7 +602,6 @@ const PurchaseOrderForm = () => {
             }}
           />
         </label>
-
         <label>
           Tổng giá trị (USD)
           <input
@@ -551,7 +621,6 @@ const PurchaseOrderForm = () => {
             }}
           />
         </label>
-
         <label>
           Ghi chú
           <textarea
@@ -590,20 +659,26 @@ const PurchaseOrderForm = () => {
         }}
       >
         <FaArrowLeft /> Quay lại
-      </button>
-
+      </button>{" "}
       <button
         onClick={handleCreateOrder}
-        disabled={loading.creating || selectedProducts.length === 0}
+        disabled={
+          loading.creating || selectedProducts.length === 0 || partyLoading
+        }
         className="submit"
         style={{
           padding: "12px 24px",
           backgroundColor:
-            selectedProducts.length === 0 ? "#6c757d" : "#28a745",
+            selectedProducts.length === 0 || partyLoading
+              ? "#6c757d"
+              : "#28a745",
           color: "white",
           border: "none",
           borderRadius: "6px",
-          cursor: selectedProducts.length === 0 ? "not-allowed" : "pointer",
+          cursor:
+            selectedProducts.length === 0 || partyLoading
+              ? "not-allowed"
+              : "pointer",
           fontSize: "16px",
           fontWeight: "600",
         }}
@@ -695,41 +770,36 @@ const PurchaseOrderForm = () => {
         </div>
       </div>
     );
-
   // Toast Notification
-  const renderToast = () =>
-    toastShow && (
-      <div
-        style={{
-          position: "fixed",
-          top: "20px",
-          right: "20px",
-          backgroundColor: toastVariant === "success" ? "#28a745" : "#dc3545",
-          color: "white",
-          padding: "12px 20px",
-          borderRadius: "4px",
-          zIndex: 1000,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-        }}
-      >
-        {toastMessage}
-      </div>
-    );
+  const renderToast = () => (
+    <ToastMessage
+      show={toastShow}
+      message={toastMessage}
+      variant={toastVariant}
+      onClose={() => setToastShow(false)}
+    />
+  );
 
   return (
     <div className="full-container">
       {renderLowStockAlertsSection()}
 
       <div className="kiemkho-main-content">
+        {" "}
         <div className="kiemkho-header">
           <h2 className="kiemkho-title">TẠO ĐƠN HÀNG TỪ CẢNH BÁO THIẾU HÀNG</h2>
+          {partyLoading && (
+            <div
+              style={{ fontSize: "14px", color: "#6c757d", marginTop: "4px" }}
+            >
+              Đang tải danh sách nhà cung cấp...
+            </div>
+          )}
         </div>
-
         <div className="kiemkhochitiet-table-section">
           {renderSelectedProductsTable()}
           {renderOrderInformation()}
         </div>
-
         {renderActionButtons()}
       </div>
 

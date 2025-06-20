@@ -13,44 +13,41 @@ export const useStockCheck = () => {
   const [activeFilters, setActiveFilters] = useState({});
   // Unified free-text search across product name or reference code
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // -----------------------------------------------------------------------------
   // STEP 1: non-text filters (date range, status, etc.)
   // -----------------------------------------------------------------------------
   const filteredResults = useMemo(() => {
     if (allStockCheckResults.length === 0) return [];
-    
+
     try {
       // Create a deep copy of the results to avoid mutating the original
       let results = JSON.parse(JSON.stringify(allStockCheckResults));
 
       // Apply filters only if they exist in activeFilters
       // Return new array with new object references to ensure React detects changes
-      return results.filter(item => {
+      return results.filter((item) => {
         // Date range filter
         if (activeFilters.startDate && activeFilters.endDate) {
           const itemDate = new Date(item.checkTimestamp);
           const startDate = new Date(activeFilters.startDate);
           const endDate = new Date(activeFilters.endDate);
           endDate.setHours(23, 59, 59, 999);
-          
+
           if (!(itemDate >= startDate && itemDate <= endDate)) {
             return false;
           }
         }
-
 
         // Status filter
         if (activeFilters.status && item.checkStatus !== activeFilters.status) {
           return false;
         }
 
-
-
         return true;
       });
     } catch (error) {
-      console.error('Error filtering results:', error);
+      console.error("Error filtering results:", error);
       return [];
     }
   }, [allStockCheckResults, activeFilters]);
@@ -75,7 +72,7 @@ export const useStockCheck = () => {
       if (!grouped[reference]) {
         grouped[reference] = {
           referenceId: reference,
-          checkTimestamp: result.checkTimestamp,
+          checkTimestamp: result.checkDate || result.checkTimestamp,
           checkedBy: result.checkedBy || "Unknown",
           totalItems: 0,
           itemsWithVariance: 0,
@@ -102,9 +99,10 @@ export const useStockCheck = () => {
     if (filteredResults.length === 0) return [];
     if (!searchTerm) return filteredResults;
     const term = searchTerm.toLowerCase();
-    return filteredResults.filter((r) =>
-      (r.productName || "").toLowerCase().includes(term) ||
-      (r.checkReference || "").toLowerCase().includes(term)
+    return filteredResults.filter(
+      (r) =>
+        (r.productName || "").toLowerCase().includes(term) ||
+        (r.checkReference || "").toLowerCase().includes(term)
     );
   }, [filteredResults, searchTerm]);
 
@@ -126,7 +124,6 @@ export const useStockCheck = () => {
       )
     );
   }, [rawSummaries, searchTerm]);
-  
 
   // Loading and error states
   const [loading, setLoading] = useState(false);
@@ -147,23 +144,23 @@ export const useStockCheck = () => {
    * Automatically refreshes when filters change or are cleared
    */
   const applyFilters = useCallback((filters = {}) => {
-    setActiveFilters(prev => {
+    setActiveFilters((prev) => {
       const newFilters = { ...prev, ...filters };
-      
+
       // If any filter is being cleared (empty string or undefined), remove it from active filters
-      Object.keys(newFilters).forEach(key => {
-        if (newFilters[key] === '' || newFilters[key] === undefined) {
+      Object.keys(newFilters).forEach((key) => {
+        if (newFilters[key] === "" || newFilters[key] === undefined) {
           delete newFilters[key];
         }
       });
-      
+
       return newFilters;
     });
-    
+
     // Reset to first page when filters change
-    setResultsPagination(prev => ({
+    setResultsPagination((prev) => ({
       ...prev,
-      page: 0
+      page: 0,
     }));
   }, []);
 
@@ -177,100 +174,106 @@ export const useStockCheck = () => {
   /**
    * Fetches all stock check results
    */
-  const fetchAllStockCheckResults = useCallback(async (params = {}) => {
-    try {
-      setResultsLoading(true);
-      setResultsError(null);
+  const fetchAllStockCheckResults = useCallback(
+    async (params = {}) => {
+      try {
+        setResultsLoading(true);
+        setResultsError(null);
 
-      // Fetch all results without pagination
-      const response = await stockCheckService.getStockCheckResults({
-        size: 1000, // Adjust based on expected maximum
-        sort: "checkTimestamp,desc",
-        ...params,
-      });
+        // Fetch all results without pagination
+        const response = await stockCheckService.getStockCheckResults({
+          size: 1000, // Adjust based on expected maximum
+          sort: "checkTimestamp,desc",
+          ...params,
+        });
 
-      // The service already formats the response, so we can use it directly
-      const results = response?.results || [];
-      const paginationInfo = response?.pagination || {};
+        // The service already formats the response, so we can use it directly
+        const results = response?.results || [];
+        const paginationInfo = response?.pagination || {};
 
-      setAllStockCheckResults(results);
-      
-      // Update pagination
-      setResultsPagination((prev) => ({
-        ...prev,
-        totalItems: results.length,
-        totalPages: Math.ceil(results.length / prev.size),
-      }));
-      
-      // Grouped summaries are now handled by the memoized value below
+        setAllStockCheckResults(results);
 
-      return { results, pagination: paginationInfo };
-    } catch (err) {
-      setResultsError("Failed to fetch stock check results");
-      console.error("Error fetching stock check results:", err);
-      throw err;
-    } finally {
-      setResultsLoading(false);
-    }
-  }, [viewMode, groupByRefId]);
+        // Update pagination
+        setResultsPagination((prev) => ({
+          ...prev,
+          totalItems: results.length,
+          totalPages: Math.ceil(results.length / prev.size),
+        }));
 
+        // Grouped summaries are now handled by the memoized value below
 
+        return { results, pagination: paginationInfo };
+      } catch (err) {
+        setResultsError("Failed to fetch stock check results");
+        console.error("Error fetching stock check results:", err);
+        throw err;
+      } finally {
+        setResultsLoading(false);
+      }
+    },
+    [viewMode, groupByRefId]
+  );
 
   // Update pagination when filtered results change
   useEffect(() => {
-    setResultsPagination(prev => ({
+    setResultsPagination((prev) => ({
       ...prev,
       totalItems: filteredResults.length,
-      totalPages: Math.ceil(filteredResults.length / prev.size)
+      totalPages: Math.ceil(filteredResults.length / prev.size),
     }));
   }, [filteredResults]);
 
   /**
    * Fetches stock check results with optional filters
    */
-  const fetchStockCheckResults = useCallback(async (params = {}) => {
-    try {
-      setResultsLoading(true);
-      setResultsError(null);
+  const fetchStockCheckResults = useCallback(
+    async (params = {}) => {
+      try {
+        setResultsLoading(true);
+        setResultsError(null);
 
-      // If we already have all results, just update the active filters
-      if (allStockCheckResults.length > 0) {
-        // Update active filters which will trigger the filteredResults recalculation
-        if (Object.keys(params).length > 0) {
-          setActiveFilters(prev => ({
-            ...prev,
-            ...params
-          }));
+        // If we already have all results, just update the active filters
+        if (allStockCheckResults.length > 0) {
+          // Update active filters which will trigger the filteredResults recalculation
+          if (Object.keys(params).length > 0) {
+            setActiveFilters((prev) => ({
+              ...prev,
+              ...params,
+            }));
+          }
+
+          // Return the current filtered results (they'll be updated by the useMemo)
+          return {
+            results: filteredResults,
+            pagination: {
+              totalItems: filteredResults.length,
+              totalPages: Math.ceil(
+                filteredResults.length / resultsPagination.size
+              ),
+              currentPage: 1,
+              pageSize: resultsPagination.size,
+            },
+          };
         }
-        
-        // Return the current filtered results (they'll be updated by the useMemo)
-        return {
-          results: filteredResults,
-          pagination: {
-            totalItems: filteredResults.length,
-            totalPages: Math.ceil(filteredResults.length / resultsPagination.size),
-            currentPage: 1,
-            pageSize: resultsPagination.size,
-          },
-        };
-      }
 
-      // If no results are loaded yet, fetch them
-      return await fetchAllStockCheckResults(params);
-    } catch (err) {
-      setResultsError("Failed to fetch stock check results");
-      console.error("Error fetching stock check results:", err);
-      throw err;
-    } finally {
-      setResultsLoading(false);
-    }
-  }, [
-    allStockCheckResults,
-    fetchAllStockCheckResults,
-    groupByRefId,
-    resultsPagination.size,
-    viewMode,
-  ]);
+        // If no results are loaded yet, fetch them
+        return await fetchAllStockCheckResults(params);
+      } catch (err) {
+        setResultsError("Failed to fetch stock check results");
+        console.error("Error fetching stock check results:", err);
+        throw err;
+      } finally {
+        setResultsLoading(false);
+      }
+    },
+    [
+      allStockCheckResults,
+      fetchAllStockCheckResults,
+      groupByRefId,
+      resultsPagination.size,
+      viewMode,
+    ]
+  );
 
   /**
    * Fetches results by date range

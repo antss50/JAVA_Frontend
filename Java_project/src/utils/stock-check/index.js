@@ -28,7 +28,7 @@ import stockFormatter, {
 } from "./stockFormatter.jsx";
 
 // Import and re-export the service layer
-import stockCheckService from "../../services/inventory-related/stock-check/stockCheckService.js";
+import stockCheckService from "../../services/inventory-related/stock-check/stockCheckService.jsx";
 
 // Export formatters individually
 export {

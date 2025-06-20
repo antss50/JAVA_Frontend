@@ -56,13 +56,17 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
 
   // Use loading state from useImportGoodsReturned hook
   const loading = goodsReturnLoading.recording;
-
   // Load returnable bills on component mount
   useEffect(() => {
     if (isOpen) {
       loadReturnableBills();
     }
   }, [isOpen]);
+
+  // Debug: Track formData changes
+  useEffect(() => {
+    console.log("FormData updated:", formData);
+  }, [formData]);
 
   // Reload bills when pagination changes
   useEffect(() => {
@@ -147,14 +151,29 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
 
   /**
    * Handle bill selection
-   */
-  const handleBillSelect = useCallback(
+   */ const handleBillSelect = useCallback(
     async (bill) => {
       try {
         // Fetch detailed bill information for return
         const billDetails = await getBillForReturn(bill.id);
 
+        console.log("Bill details response:", billDetails); // Debug log
+
         if (billDetails.success) {
+          console.log("Bill data:", billDetails.data); // Debug log
+          console.log("Bill lines:", billDetails.data.lines); // Debug log
+          console.log(
+            "Bill lines details:",
+            billDetails.data.lines?.map((line) => ({
+              id: line.id,
+              productId: line.productId,
+              productName: line.productName,
+              quantity: line.quantity,
+              receivedQuantity: line.receivedQuantity,
+              returnedQuantity: line.returnedQuantity,
+            }))
+          ); // Debug log
+
           setSelectedBill(billDetails.data);
           setShowBillSearch(false);
 
@@ -207,15 +226,25 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     setErrors({});
     setValidationErrors([]);
   }, []);
-
   /**
    * Validate form before submission
    */
   const validateForm = useCallback(() => {
     const errors = [];
 
+    console.log("Validating form with data:", formData); // Debug log    console.log("Selected bill:", selectedBill); // Debug log
+
     if (!selectedBill) {
       errors.push("Vui lòng chọn phiếu nhập hàng");
+    }
+
+    // Validate billId
+    const billId =
+      formData.billId && formData.billId.toString().trim() !== ""
+        ? formData.billId
+        : selectedBill?.id;
+    if (!billId) {
+      errors.push("Không tìm thấy ID phiếu nhập hàng");
     }
 
     if (!formData.returnDate) {
@@ -225,6 +254,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     const validLines = formData.lines.filter(
       (line) => line.quantityToReturn > 0
     );
+    console.log("Valid lines with quantity > 0:", validLines); // Debug log
+
     if (validLines.length === 0) {
       errors.push("Vui lòng chọn ít nhất một sản phẩm để trả về");
     }
@@ -247,41 +278,68 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
       }
     });
 
+    console.log("Validation errors:", errors); // Debug log
     setValidationErrors(errors);
     return errors.length === 0;
   }, [selectedBill, formData]);
-
   /**
    * Handle form submission
-   */
-  const handleSubmit = useCallback(async () => {
-    if (!validateForm()) return;
+   */ const handleSubmit = useCallback(async () => {
+    console.log("Form data before validation:", formData); // Debug log
+    console.log("Selected bill before validation:", selectedBill); // Debug log
 
+    if (!validateForm()) return;
     try {
+      // Use selectedBill.id if formData.billId is not available or empty
+      const billId =
+        formData.billId && formData.billId.toString().trim() !== ""
+          ? formData.billId
+          : selectedBill?.id;
+
+      console.log("Resolved billId:", billId); // Debug log
+
+      if (!billId) {
+        throw new Error("No valid bill ID found");
+      }
+
       // Prepare return data
       const returnData = {
-        billId: formData.billId,
-        supplierId: formData.supplierId,
+        billId: billId,
+        supplierId: formData.supplierId || selectedBill?.supplierId,
         returnDate: formData.returnDate,
         returnedBy: formData.returnedBy || "System",
         notes: formData.notes,
         lines: formData.lines
           .filter((line) => line.quantityToReturn > 0)
-          .map((line) => ({
-            productId: line.productId,
-            quantity: line.quantityToReturn,
-            unitPrice: line.unitPrice,
-            reason: line.reason,
-            originalLineId: line.id,
-          })),
+          .map((line) => {
+            console.log("Processing line for submission:", {
+              id: line.id,
+              productId: line.productId,
+              productName: line.productName,
+              quantityToReturn: line.quantityToReturn,
+              unitPrice: line.unitPrice,
+              reason: line.reason,
+            }); // Debug log
+
+            return {
+              productId: line.productId,
+              quantity: line.quantityToReturn,
+              unitPrice: line.unitPrice,
+              reason: line.reason,
+              originalLineId: line.id,
+            };
+          }),
       };
 
-      await recordGoodsReturn(returnData);
+      console.log("Submitting return data:", returnData); // Debug log
+
+      const result = await recordGoodsReturn(returnData);
+      console.log("Return submission result:", result); // Debug log
     } catch (error) {
       console.error("Error submitting return:", error);
       setErrors({ submit: error.message });
     }
-  }, [validateForm, recordGoodsReturn, formData]);
+  }, [validateForm, recordGoodsReturn, formData, selectedBill]);
 
   /**
    * Handle close

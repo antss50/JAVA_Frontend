@@ -18,6 +18,15 @@ import "../product.css";
 const BillManagement = () => {
   const navigate = useNavigate();
 
+  // Helper function to format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return "0 ₫";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
   const {
     bills,
     summary,
@@ -188,8 +197,8 @@ const BillManagement = () => {
           }}
         >
           {summary?.totalOutstanding
-            ? `$${summary.totalOutstanding.toLocaleString()}`
-            : "$0"}
+            ? formatCurrency(summary.totalOutstanding)
+            : "0 ₫"}
         </p>
       </div>
 
@@ -214,12 +223,12 @@ const BillManagement = () => {
           }}
         >
           {summary?.overdueCount || 0}
-        </p>
+        </p>{" "}
         <small style={{ color: "#6c757d" }}>
-          Tổng: $
+          Tổng:{" "}
           {summary?.overdueAmount
-            ? summary.overdueAmount.toLocaleString()
-            : "0"}
+            ? formatCurrency(summary.overdueAmount)
+            : "0 ₫"}
         </small>
       </div>
 
@@ -644,9 +653,10 @@ const BillManagement = () => {
             <strong>Đã thanh toán:</strong> {selectedBill?.amountPaid}
           </p>
           <p>
+            {" "}
             <strong>Còn lại:</strong>{" "}
             <span style={{ color: "#dc3545", fontWeight: "bold" }}>
-              ${remainingBalance.toLocaleString()}
+              {remainingBalance.toLocaleString("vi-VN")} ₫
             </span>
           </p>
 

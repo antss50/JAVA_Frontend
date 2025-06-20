@@ -11,7 +11,7 @@ const Navbar = () => {
         { to: "/hang-hoa/san-pham", label: "Sản Phẩm" },
         { to: "/hang-hoa/kho", label: "Kho" },
         { to: "/hang-hoa/kiem-kho", label: "Kiểm kho" },
-        { to: "/hang-hoa/bill-management", label: "Quản lý hóa đơn" }, // Added Bill Management
+        { to: "/hang-hoa/bill-management", label: "Lịch sử giao dịch" }, // Added Bill Management
       ],
     },
     giaoDich: {

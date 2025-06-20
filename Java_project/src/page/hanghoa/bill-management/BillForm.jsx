@@ -16,6 +16,16 @@ const BillForm = () => {
   const navigate = useNavigate();
   const { billId } = useParams(); // For editing existing bills
   const isEditMode = !!billId;
+
+  // Helper function to format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return "0 ₫";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
   const {
     currentBill,
     loading,
@@ -437,10 +447,11 @@ const BillForm = () => {
         <label
           style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}
         >
+          {" "}
           Tổng tiền
           <input
             type="text"
-            value={`$${calculateBillTotal().toFixed(2)}`}
+            value={`${calculateBillTotal().toLocaleString("vi-VN")} ₫`}
             readOnly
             style={{
               width: "100%",
@@ -516,7 +527,7 @@ const BillForm = () => {
             <th>Sản phẩm</th>
             <th>Mô tả</th>
             <th>Số lượng</th>
-            <th>Đơn giá (USD)</th>
+            <th>Đơn giá (VNĐ)</th>
             <th>Thành tiền</th>
             <th>Thao tác</th>
           </tr>
@@ -601,11 +612,14 @@ const BillForm = () => {
                     border: "1px solid #ccc",
                   }}
                 />
-              </td>
+              </td>{" "}
               <td>
                 <strong>
-                  $
-                  {calculateLineTotal(line.quantity, line.unitPrice).toFixed(2)}
+                  {calculateLineTotal(
+                    line.quantity,
+                    line.unitPrice
+                  ).toLocaleString("vi-VN")}{" "}
+                  ₫
                 </strong>
               </td>
               <td>
@@ -632,11 +646,10 @@ const BillForm = () => {
         <tfoot>
           <tr style={{ backgroundColor: "#f8f9fa", fontWeight: "bold" }}>
             <td colSpan="5" style={{ textAlign: "right", padding: "12px" }}>
-              <FaCalculator style={{ marginRight: "8px" }} />
-              Tổng cộng:
+              <FaCalculator style={{ marginRight: "8px" }} /> Tổng cộng:
             </td>
             <td style={{ fontSize: "18px", color: "#28a745" }}>
-              ${calculateBillTotal().toFixed(2)}
+              {calculateBillTotal().toLocaleString("vi-VN")} ₫
             </td>
             <td></td>
           </tr>

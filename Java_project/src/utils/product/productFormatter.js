@@ -173,12 +173,15 @@ export const validateProduct = (product) => {
 /**
  * Formats price for display
  * @param {number} price - Price value
- * @param {string} currency - Currency symbol (default: '$')
+ * @param {string} currency - Currency symbol (default: '₫')
  * @returns {string} Formatted price string
  */
-export const formatPriceDisplay = (price, currency = "$") => {
-  if (price === null || price === undefined) return `${currency}0.00`;
-  return `${currency}${parseFloat(price).toFixed(2)}`;
+export const formatPriceDisplay = (price, currency = "₫") => {
+  if (price === null || price === undefined) return `0 ${currency}`;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(parseFloat(price));
 };
 
 /**

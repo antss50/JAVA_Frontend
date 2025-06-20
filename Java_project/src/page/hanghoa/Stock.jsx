@@ -286,16 +286,15 @@ const Stock = () => {
         {" "}
         {/* Header with Statistics */}
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fw-bold">Quản lý Kho</h2>
+          <h2 className="fw-bold fs-4">QUẢN LÝ KHO</h2>
           <button
             className="btn btn-primary"
             onClick={handleRefresh}
             disabled={isRefreshing || allProductsLoading}
           >
             <i
-              className={`fas ${
-                isRefreshing ? "fa-spinner fa-spin" : "fa-sync-alt"
-              } me-2`}
+              className={`fas ${isRefreshing ? "fa-spinner fa-spin" : "fa-sync-alt"
+                } me-2`}
             ></i>
             {isRefreshing ? "Đang làm mới..." : "Làm mới"}
           </button>
@@ -303,34 +302,34 @@ const Stock = () => {
         {/* Statistics Cards */}
         <div className="row mb-4">
           <div className="col-md-3">
-            <div className="card bg-primary text-white">
+            <div className="card text-dark">
               <div className="card-body">
                 <h5 className="card-title">Tổng sản phẩm</h5>
-                <h3>{totalProducts}</h3>
+                <h3 className="text-primary">{totalProducts}</h3>
               </div>
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card bg-warning text-dark">
+            <div className="card text-dark">
               <div className="card-body">
                 <h5 className="card-title">Sắp hết hàng</h5>
-                <h3>{lowStockCount}</h3>
+                <h3 className="text-warning">{lowStockCount}</h3>
               </div>
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card bg-danger text-white">
+            <div className="card text-white">
               <div className="card-body">
-                <h5 className="card-title">Hết hàng</h5>
-                <h3>{outOfStockCount}</h3>
+                <h5 className="card-title text-dark">Hết hàng</h5>
+                <h3 className="text-danger">{outOfStockCount}</h3>
               </div>
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card bg-success text-white">
+            <div className="card text-dark">
               <div className="card-body">
                 <h5 className="card-title">Giá trị tồn kho</h5>
-                <h6>{formatCurrency(totalInventoryValue)}</h6>
+                <h6 className="text-success">{formatCurrency(totalInventoryValue)}</h6>
               </div>
             </div>
           </div>
@@ -351,7 +350,7 @@ const Stock = () => {
             ) : (
               <>
                 <div className="table-responsive">
-                  <table className="table table-hover mb-0">
+                  <table className="table table-hover mb-0 text-center">
                     <thead className="table-light">
                       <tr>
                         <th>Mã SP</th>
@@ -379,15 +378,8 @@ const Stock = () => {
                               </span>
                             </td>
                             <td>
-                              <div>
-                                <div className="fw-bold">
-                                  {product.name || "Tên không xác định"}
-                                </div>
-                                {product.sku && (
-                                  <small className="text-muted">
-                                    SKU: {product.sku}
-                                  </small>
-                                )}
+                              <div className="fw-bold">
+                                {product.name || "Tên không xác định"}
                               </div>
                             </td>
                             <td>
@@ -397,14 +389,13 @@ const Stock = () => {
                             </td>
                             <td>
                               <span
-                                className={`fw-bold ${
-                                  (product.currentStock || 0) <= 0
+                                className={`fw-bold ${(product.currentStock || 0) <= 0
                                     ? "text-danger"
                                     : (product.currentStock || 0) <=
                                       (product.reorderLevel || 0)
-                                    ? "text-warning"
-                                    : "text-success"
-                                }`}
+                                      ? "text-warning"
+                                      : "text-success"
+                                  }`}
                               >
                                 {product.stockDisplay ||
                                   (product.currentStock || 0).toString()}
@@ -427,7 +418,7 @@ const Stock = () => {
                               <span className="fw-bold">
                                 {formatCurrency(
                                   (product.sellingPrice || 0) *
-                                    (product.currentStock || 0)
+                                  (product.currentStock || 0)
                                 )}
                               </span>
                             </td>
@@ -444,9 +435,8 @@ const Stock = () => {
                     <nav>
                       <ul className="pagination mb-0">
                         <li
-                          className={`page-item ${
-                            currentPage === 1 ? "disabled" : ""
-                          }`}
+                          className={`page-item ${currentPage === 1 ? "disabled" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -462,9 +452,8 @@ const Stock = () => {
                         ).map((page) => (
                           <li
                             key={page}
-                            className={`page-item ${
-                              currentPage === page ? "active" : ""
-                            }`}
+                            className={`page-item ${currentPage === page ? "active" : ""
+                              }`}
                           >
                             <button
                               className="page-link"
@@ -475,9 +464,8 @@ const Stock = () => {
                           </li>
                         ))}
                         <li
-                          className={`page-item ${
-                            currentPage === totalPages ? "disabled" : ""
-                          }`}
+                          className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                            }`}
                         >
                           <button
                             className="page-link"

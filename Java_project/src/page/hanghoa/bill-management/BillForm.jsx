@@ -154,13 +154,13 @@ const BillForm = () => {
       prev.map((line, i) =>
         i === index
           ? {
-              ...line,
-              productId,
-              productName: selectedProduct ? selectedProduct.name : "",
-              description: selectedProduct
-                ? `${selectedProduct.name} - ${selectedProduct.unit}`
-                : "",
-            }
+            ...line,
+            productId,
+            productName: selectedProduct ? selectedProduct.name : "",
+            description: selectedProduct
+              ? `${selectedProduct.name} - ${selectedProduct.unit}`
+              : "",
+          }
           : line
       )
     );
@@ -349,6 +349,7 @@ const BillForm = () => {
               border: "1px solid #ccc",
             }}
             placeholder="Nhập mã hóa đơn"
+            className="bg-light text-dark"
           />
         </label>
 
@@ -366,6 +367,7 @@ const BillForm = () => {
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
+            className="bg-light text-dark"
           >
             {" "}
             <option value="">Chọn nhà cung cấp...</option>
@@ -397,6 +399,7 @@ const BillForm = () => {
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
+            className="bg-light text-dark"
           >
             <option value="PENDING">Chờ xử lý</option>
             <option value="PAID">Đã thanh toán</option>
@@ -423,6 +426,7 @@ const BillForm = () => {
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
+            className="bg-light text-dark"
           />
         </label>
 
@@ -441,6 +445,7 @@ const BillForm = () => {
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
+            className="bg-light text-dark"
           />
         </label>
 
@@ -463,6 +468,7 @@ const BillForm = () => {
               fontWeight: "bold",
               fontSize: "16px",
             }}
+            className="bg-light text-dark"
           />
         </label>
       </div>
@@ -485,6 +491,7 @@ const BillForm = () => {
               border: "1px solid #ccc",
               resize: "vertical",
             }}
+            className="bg-light text-dark"
           />
         </label>
       </div>
@@ -520,8 +527,8 @@ const BillForm = () => {
         </button>
       </div>
 
-      <table className="kiemkho-table">
-        <thead>
+      <table className="table table-bordered table-hover align-middle">
+        <thead className="table-light text-center">
           <tr>
             <th>STT</th>
             <th>Sản phẩm</th>
@@ -535,24 +542,18 @@ const BillForm = () => {
         <tbody>
           {billLines.map((line, index) => (
             <tr key={index}>
-              <td>{index + 1}</td>
+              <td className="text-center">{index + 1}</td>
+
               <td>
                 <select
+                  className="form-select"
                   value={line.productId}
                   onChange={(e) => handleProductChange(index, e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "4px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
                 >
                   <option value="">Chọn sản phẩm...</option>
                   {allProducts.length === 0 ? (
                     <option value="" disabled>
-                      {productLoading
-                        ? "Đang tải..."
-                        : "Không có dữ liệu sản phẩm"}
+                      {productLoading ? "Đang tải..." : "Không có dữ liệu sản phẩm"}
                     </option>
                   ) : (
                     allProducts.map((product) => (
@@ -563,41 +564,35 @@ const BillForm = () => {
                   )}
                 </select>
               </td>
+
               <td>
                 <input
                   type="text"
+                  className="form-control"
                   value={line.description}
                   onChange={(e) =>
                     handleLineChange(index, "description", e.target.value)
                   }
                   placeholder="Mô tả sản phẩm/dịch vụ"
-                  style={{
-                    width: "100%",
-                    padding: "4px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
                 />
               </td>
+
               <td>
                 <input
                   type="number"
+                  className="form-control text-end"
                   value={line.quantity}
                   onChange={(e) =>
                     handleLineChange(index, "quantity", e.target.value)
                   }
                   min="1"
-                  style={{
-                    width: "80px",
-                    padding: "4px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
                 />
               </td>
+
               <td>
                 <input
                   type="number"
+                  className="form-control text-end"
                   value={line.unitPrice}
                   onChange={(e) =>
                     handleLineChange(index, "unitPrice", e.target.value)
@@ -605,36 +600,19 @@ const BillForm = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  style={{
-                    width: "100px",
-                    padding: "4px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
                 />
-              </td>{" "}
-              <td>
-                <strong>
-                  {calculateLineTotal(
-                    line.quantity,
-                    line.unitPrice
-                  ).toLocaleString("vi-VN")}{" "}
-                  ₫
-                </strong>
               </td>
-              <td>
+
+              <td className="fw-bold text-success text-end">
+                ${calculateLineTotal(line.quantity, line.unitPrice).toFixed(2)}
+              </td>
+
+              <td className="text-center">
                 <button
+                  className={`btn btn-sm ${billLines.length === 1 ? "btn-secondary" : "btn-danger"
+                    }`}
                   onClick={() => removeLine(index)}
                   disabled={billLines.length === 1}
-                  style={{
-                    padding: "4px 8px",
-                    backgroundColor:
-                      billLines.length === 1 ? "#6c757d" : "#dc3545",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: billLines.length === 1 ? "not-allowed" : "pointer",
-                  }}
                   title="Xóa dòng"
                 >
                   <FaTrash />
@@ -643,18 +621,21 @@ const BillForm = () => {
             </tr>
           ))}
         </tbody>
+
         <tfoot>
-          <tr style={{ backgroundColor: "#f8f9fa", fontWeight: "bold" }}>
-            <td colSpan="5" style={{ textAlign: "right", padding: "12px" }}>
-              <FaCalculator style={{ marginRight: "8px" }} /> Tổng cộng:
+          <tr className="table-light fw-bold">
+            <td colSpan="5" className="text-end">
+              <FaCalculator className="me-2" />
+              Tổng cộng:
             </td>
-            <td style={{ fontSize: "18px", color: "#28a745" }}>
-              {calculateBillTotal().toLocaleString("vi-VN")} ₫
+            <td className="fs-5 text-success text-end">
+              ${calculateBillTotal().toFixed(2)}
             </td>
             <td></td>
           </tr>
         </tfoot>
       </table>
+
     </div>
   );
 
@@ -708,8 +689,8 @@ const BillForm = () => {
         {loading.creating || loading.updating
           ? "Đang lưu..."
           : isEditMode
-          ? "Cập nhật"
-          : "Tạo hóa đơn"}
+            ? "Cập nhật"
+            : "Tạo hóa đơn"}
       </button>
     </div>
   );

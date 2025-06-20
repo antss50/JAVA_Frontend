@@ -272,15 +272,15 @@ const BillManagement = () => {
 
         <button
           onClick={handleSearch}
-          className="kiemkho-button"
+          className="search-btn"
           style={{ marginBottom: "10px", width: "100%" }}
         >
-          <FaSearch /> Tìm kiếm
+          🔍 Tìm kiếm
         </button>
 
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="kiemkho-button"
+          className="search-btn"
           style={{
             marginBottom: "10px",
             width: "100%",
@@ -292,14 +292,14 @@ const BillManagement = () => {
 
         <button
           onClick={handleClearSearch}
-          className="kiemkho-button"
+          className="search-btn"
           style={{
             marginBottom: "10px",
             width: "100%",
             backgroundColor: "#6c757d",
           }}
         >
-          Xóa bộ lọc
+          🗑️ Xóa bộ lọc
         </button>
       </div>
 
@@ -383,12 +383,12 @@ const BillManagement = () => {
 
   const renderTableHeader = () => (
     <div className="kiemkho-header">
-      <h2 className="kiemkho-title">QUẢN LÝ HÓA ĐƠN</h2>
-      <div className="header-actions" style={{ display: "flex", gap: "12px" }}>
+      <h2 className="kiemkho-title">LỊCH SỬ NHẬP HÀNG</h2>
+      <div className="header-actions" style={{ display: "flex", gap: "12px"}}>
         <button
           className="kiemkho-button"
           onClick={() => navigate("/hang-hoa/bill-management/purchase-order")}
-          style={{ backgroundColor: "#28a745" }}
+          style={{ backgroundColor: "#28a745"}}
         >
           <FaShoppingCart /> Tạo đơn hàng
         </button>
@@ -411,31 +411,19 @@ const BillManagement = () => {
   );
 
   const renderBillsTable = () => (
-    <table className="kiemkho-table">
-      <thead>
+    <table className="table table-hover mb-0">
+      <thead className="table-light text-center">
         <tr>
-          <th
-            onClick={() => handleSortChange("billNumber")}
-            style={{ cursor: "pointer" }}
-          >
+          <th onClick={() => handleSortChange("billNumber")} style={{ cursor: "pointer" }}>
             Mã hóa đơn ↕
           </th>
-          <th
-            onClick={() => handleSortChange("vendorName")}
-            style={{ cursor: "pointer" }}
-          >
+          <th onClick={() => handleSortChange("vendorName")} style={{ cursor: "pointer" }}>
             Nhà cung cấp ↕
           </th>
-          <th
-            onClick={() => handleSortChange("billDate")}
-            style={{ cursor: "pointer" }}
-          >
+          <th onClick={() => handleSortChange("billDate")} style={{ cursor: "pointer" }}>
             Ngày tạo ↕
           </th>
-          <th
-            onClick={() => handleSortChange("dueDate")}
-            style={{ cursor: "pointer" }}
-          >
+          <th onClick={() => handleSortChange("dueDate")} style={{ cursor: "pointer" }}>
             Ngày đến hạn ↕
           </th>
           <th>Tổng tiền</th>
@@ -445,12 +433,10 @@ const BillManagement = () => {
           <th>Thao tác</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody className="text-center">
         {loading.bills ? (
           <tr>
-            <td colSpan="9" className="no-data">
-              Đang tải dữ liệu...
-            </td>
+            <td colSpan="9" className="no-data">Đang tải dữ liệu...</td>
           </tr>
         ) : bills.length === 0 ? (
           <tr>
@@ -461,99 +447,57 @@ const BillManagement = () => {
         ) : (
           bills.map((bill) => (
             <tr key={bill.id}>
-              <td>{bill.billNumber}</td>
-              <td>{bill.vendorName}</td>
-              <td>{bill.billDate}</td>
-              <td className={bill.isOverdue ? "overdue" : ""}>
-                {bill.dueDate}
-              </td>
-              <td>{bill.totalAmount}</td>
-              <td>{bill.amountPaid}</td>
-              <td>{bill.outstandingAmount}</td>
               <td>
-                <span
-                  className={`status-badge ${bill.statusBadge?.class}`}
-                  style={{
-                    backgroundColor: bill.statusBadge?.color,
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                  }}
-                >
-                  {bill.statusBadge?.text}
+                <span className="badge bg-secondary">{bill.billNumber}</span>
+              </td>
+              <td className="fw-bold">{bill.vendorName}</td>
+              <td>{new Date(bill.billDate).toLocaleDateString("vi-VN")}</td>
+              <td className={bill.isOverdue ? "text-danger fw-bold" : ""}>
+                {new Date(bill.dueDate).toLocaleDateString("vi-VN")}
+              </td>
+              <td>{bill.totalAmount?.toLocaleString()} VNĐ</td>
+              <td>{bill.amountPaid?.toLocaleString()} VNĐ</td>
+              <td className="fw-bold text-danger">{bill.outstandingAmount?.toLocaleString()} VNĐ</td>
+              <td>
+                <span className={`badge ${bill.statusBadge?.class}`} style={{
+                  backgroundColor: bill.statusBadge?.color || "#888",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: "bold"
+                }}>
+                  {bill.statusBadge?.text || "Không rõ"}
                 </span>
               </td>
               <td>
-                <div
-                  className="action-buttons"
-                  style={{ display: "flex", gap: "4px" }}
-                >
+                <div className="d-flex justify-content-center gap-2">
                   <button
-                    onClick={() =>
-                      navigate(`/hang-hoa/bill-management/${bill.id}`)
-                    }
-                    className="view-btn"
-                    style={{
-                      padding: "4px 8px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    onClick={() => navigate(`/hang-hoa/bill-management/${bill.id}`)}
+                    className="btn btn-sm btn-primary"
                     title="Xem chi tiết"
                   >
                     <FaEye />
                   </button>
-
                   {bill.status !== "PAID" && (
                     <button
                       onClick={() => handlePaymentClick(bill)}
-                      className="pay-btn"
-                      style={{
-                        padding: "4px 8px",
-                        backgroundColor: "#28a745",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
+                      className="btn btn-sm btn-success"
                       title="Thanh toán"
                     >
                       <FaMoneyBillWave />
                     </button>
                   )}
-
                   <button
-                    onClick={() =>
-                      navigate(`/hang-hoa/bill-management/edit/${bill.id}`)
-                    }
-                    className="edit-btn"
-                    style={{
-                      padding: "4px 8px",
-                      backgroundColor: "#ffc107",
-                      color: "black",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    onClick={() => navigate(`/hang-hoa/bill-management/edit/${bill.id}`)}
+                    className="btn btn-sm btn-warning text-dark"
                     title="Sửa"
                   >
                     <FaEdit />
                   </button>
-
                   <button
                     onClick={() => handleDeleteClick(bill)}
-                    className="delete-btn"
-                    style={{
-                      padding: "4px 8px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    className="btn btn-sm btn-danger"
                     title="Xóa"
                   >
                     <FaTrash />
@@ -565,6 +509,7 @@ const BillManagement = () => {
         )}
       </tbody>
     </table>
+
   );
 
   const renderPagination = () => (

@@ -321,9 +321,8 @@ const PurchaseOrderForm = () => {
                   return (
                     <div
                       key={alert.productId}
-                      className={`low-stock-item ${
-                        isSelected ? "selected" : ""
-                      }`}
+                      className={`low-stock-item ${isSelected ? "selected" : ""
+                        }`}
                       onClick={() => handleSelectProduct(alert)}
                       style={{
                         padding: "12px",
@@ -389,8 +388,8 @@ const PurchaseOrderForm = () => {
 
   const renderSelectedProductsTable = () => (
     <div className="selected-products-section">
-      <table className="kiemkhochitiet-table">
-        <thead>
+      <table className="table table-bordered table-hover align-middle">
+        <thead className="table-light text-center">
           <tr>
             <th>STT</th>
             <th>Tên sản phẩm</th>
@@ -405,50 +404,51 @@ const PurchaseOrderForm = () => {
         <tbody>
           {selectedProducts.length === 0 ? (
             <tr>
-              <td colSpan="8" className="no-data">
-                Chưa có sản phẩm nào được chọn. Chọn sản phẩm từ danh sách bên
-                trái.
+              <td colSpan="8" className="text-muted text-center py-3">
+                Chưa có sản phẩm nào được chọn. Chọn sản phẩm từ danh sách bên trái.
               </td>
             </tr>
           ) : (
             selectedProducts.map((product, index) => (
               <tr key={product.productId}>
-                <td>{index + 1}</td>
+                <td className="text-center">{index + 1}</td>
+
                 <td>
                   <div>
                     <strong>{product.productName}</strong>
                     <br />
-                    <small style={{ color: "#6c757d" }}>
+                    <small className="text-muted">
                       Mã: {product.productId} | Đơn vị: {product.unit}
                     </small>
                   </div>
                 </td>
-                <td>
+
+                <td className="text-center">
                   {product.currentStock} {product.unit}
                   <br />
-                  <small style={{ color: "#dc3545" }}>
-                    (Thiếu: {product.reorderLevel - product.currentStock})
-                  </small>
+                  {product.currentStock < product.reorderLevel && (
+                    <small className="text-danger">
+                      (Thiếu: {product.reorderLevel - product.currentStock})
+                    </small>
+                  )}
                 </td>
+
                 <td>
                   <input
                     type="number"
+                    className="form-control text-end"
                     value={product.quantity}
                     onChange={(e) =>
                       handleQuantityChange(product.productId, e.target.value)
                     }
                     min="1"
-                    style={{
-                      width: "80px",
-                      padding: "4px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
                   />
                 </td>
+
                 <td>
                   <input
                     type="number"
+                    className="form-control text-end"
                     value={product.unitPrice}
                     onChange={(e) =>
                       handlePriceChange(product.productId, e.target.value)
@@ -456,49 +456,29 @@ const PurchaseOrderForm = () => {
                     min="0"
                     step="0.01"
                     placeholder="0.00"
-                    style={{
-                      width: "80px",
-                      padding: "4px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
                   />
-                </td>{" "}
-                <td>
-                  <strong>
-                    {(product.quantity * product.unitPrice).toLocaleString(
-                      "vi-VN"
-                    )}{" "}
-                    ₫
-                  </strong>
                 </td>
+
+                <td className="fw-bold text-success text-end">
+                  ${(product.quantity * product.unitPrice).toFixed(2)}
+                </td>
+
                 <td>
                   <input
                     type="text"
+                    className="form-control"
                     value={product.description}
                     onChange={(e) =>
                       handleDescriptionChange(product.productId, e.target.value)
                     }
                     placeholder="Mô tả sản phẩm..."
-                    style={{
-                      width: "150px",
-                      padding: "4px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
                   />
                 </td>
-                <td>
+
+                <td className="text-center">
                   <button
+                    className="btn btn-sm btn-danger"
                     onClick={() => handleRemoveProduct(product.productId)}
-                    style={{
-                      padding: "4px 8px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
                     title="Xóa sản phẩm"
                   >
                     <FaTrash />
@@ -509,6 +489,7 @@ const PurchaseOrderForm = () => {
           )}
         </tbody>
       </table>
+
     </div>
   );
 
@@ -530,6 +511,7 @@ const PurchaseOrderForm = () => {
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
+            className="bg-light text-dark"
             required
             disabled={partyLoading}
           >
@@ -586,6 +568,7 @@ const PurchaseOrderForm = () => {
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
+            className="bg-light text-dark me-2"
           />
         </label>
         <label>
@@ -594,7 +577,7 @@ const PurchaseOrderForm = () => {
             type="number"
             value={totalQuantity}
             readOnly
-            className="readonly-input"
+            className="readonly-input bg-light text-dark"
             style={{
               width: "100%",
               padding: "8px",
@@ -611,7 +594,7 @@ const PurchaseOrderForm = () => {
             type="text"
             value={`${totalAmount.toLocaleString("vi-VN")} ₫`}
             readOnly
-            className="readonly-input"
+            className="readonly-input bg-light text-dark"
             style={{
               width: "100%",
               padding: "8px",
@@ -639,6 +622,7 @@ const PurchaseOrderForm = () => {
               border: "1px solid #ccc",
               resize: "vertical",
             }}
+            className="bg-light text-dark"
           />
         </label>
       </div>

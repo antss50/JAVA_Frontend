@@ -169,6 +169,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
       <div
         className="modal-content disposal-form-modal"
         onClick={(e) => e.stopPropagation()}
+        style={{backgroundColor: '#fff'}}
       >
         <div className="modal-header">
           <h3>Tạo phiếu xuất hủy</h3>
@@ -210,6 +211,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                 <div className="form-group">
                   <label>Ngày xuất hủy *</label>
                   <input
+                    className="bg-light text-dark"
                     type="date"
                     value={formData.disposalDate}
                     onChange={(e) =>
@@ -222,6 +224,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                 <div className="form-group">
                   <label>Mã tham chiếu</label>
                   <input
+                    className="bg-light text-dark"
                     type="text"
                     value={formData.referenceNumber}
                     onChange={(e) =>
@@ -234,6 +237,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                 <div className="form-group">
                   <label>Lý do xuất hủy *</label>
                   <select
+                    className="bg-light text-dark"
                     value={formData.disposalReason}
                     onChange={(e) =>
                       handleFieldChange("disposalReason", e.target.value)
@@ -252,6 +256,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                 <div className="form-group">
                   <label>Phương thức xử lý *</label>
                   <select
+                    className="bg-light text-dark"
                     value={formData.disposalMethod}
                     onChange={(e) =>
                       handleFieldChange("disposalMethod", e.target.value)
@@ -270,6 +275,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                 <div className="form-group">
                   <label>Người phê duyệt</label>
                   <input
+                    className="bg-light text-dark"
                     type="text"
                     value={formData.approvedBy}
                     onChange={(e) =>
@@ -282,6 +288,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                 <div className="form-group full-width">
                   <label>Ghi chú</label>
                   <textarea
+                    className="bg-light text-dark"
                     value={formData.notes}
                     onChange={(e) => handleFieldChange("notes", e.target.value)}
                     placeholder="Nhập ghi chú về việc xuất hủy"
@@ -391,9 +398,8 @@ const DisposalForm = ({ onClose, onSuccess }) => {
                           </td>
                           <td>
                             <span
-                              className={`stock-level ${
-                                item.currentStock <= 0 ? "out-of-stock" : ""
-                              }`}
+                              className={`stock-level ${item.currentStock <= 0 ? "out-of-stock" : ""
+                                }`}
                             >
                               {item.currentStock}
                             </span>
@@ -490,7 +496,7 @@ const DisposalForm = ({ onClose, onSuccess }) => {
               </span>
             </div>
 
-            <div className="form-actions">
+            <div className="form-actions ms-3">
               <button
                 type="button"
                 className="cancel-btn"

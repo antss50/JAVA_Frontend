@@ -170,25 +170,31 @@ const SaleOrder = () => {
             <div className="sale-analyze-container d-flex flex-wrap flex-md-nowrap gap-4">
                 <div className="left-container">
                     <div className="sale-analyze-left rounded-2">
-                        <table className="kiemkho-table">
-                            <thead className="table-primary">
+                        <table className="table table-hover mb-0">
+                            <thead className="table-primary text-center">
                                 <tr>
-                                    <th>Id</th>
-                                    <th>Tên Sản Phẩm</th>
-                                    <th>Phân Loại</th>
-                                    <th>Đơn Vị</th>
-                                    <th>Giá Bán</th>
+                                    <th>Mã SP</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Phân loại</th>
+                                    <th>Đơn vị</th>
+                                    <th>Giá bán</th>
                                     <th>Chọn</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="text-center">
                                 {products.map((product) => (
                                     <tr key={product.id}>
-                                        <td>{product.id}</td>
-                                        <td>{product.name}</td>
-                                        <td>{product.categoryName}</td>
-                                        <td>{product.unit}</td>
-                                        <td>{product.sellingPrice.toLocaleString()} VNĐ</td>
+                                        <td>
+                                            <span className="badge bg-secondary">{product.id}</span>
+                                        </td>
+                                        <td className="fw-bold">{product.name}</td>
+                                        <td>
+                                            <span className="badge bg-light text-dark">
+                                                {product.categoryName || "Chưa phân loại"}
+                                            </span>
+                                        </td>
+                                        <td>{product.unit || "cái"}</td>
+                                        <td>{product.sellingPrice?.toLocaleString()} VNĐ</td>
                                         <td>
                                             <input
                                                 type="checkbox"
@@ -200,6 +206,7 @@ const SaleOrder = () => {
                                 ))}
                             </tbody>
                         </table>
+
                         <nav className="mt-3">
                             <ul className="pagination justify-content-center">
                                 {[...Array(totalPages).keys()].map((page) => (

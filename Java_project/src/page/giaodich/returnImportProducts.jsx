@@ -223,17 +223,17 @@ const ReturnImportedProduct = () => {
   return (
     <div className="trahang-container full-container">
       {/* Search Box */}
-      <div className="trahang-search-box">
+      <div className="danhmuc-search-box">
         <h4>Tìm kiếm</h4>
         <input
           type="text"
           placeholder="Nhập mã trả hàng"
-          className="trahang-input"
+          className="trahang-input bg-light text-dark"
           value={searchFilters.returnCode}
           onChange={(e) => handleSearchChange("returnCode", e.target.value)}
         />{" "}
         <select
-          className="trahang-input"
+          className="trahang-input bg-light text-dark"
           value={searchFilters.supplierId}
           onChange={(e) => handleSearchChange("supplierId", e.target.value)}
           disabled={suppliersLoading}
@@ -248,19 +248,19 @@ const ReturnImportedProduct = () => {
         <input
           type="date"
           placeholder="Từ ngày"
-          className="trahang-input"
+          className="trahang-input bg-light text-dark"
           value={searchFilters.startDate}
           onChange={(e) => handleSearchChange("startDate", e.target.value)}
         />
         <input
           type="date"
           placeholder="Đến ngày"
-          className="trahang-input"
+          className="trahang-input bg-light text-dark"
           value={searchFilters.endDate}
           onChange={(e) => handleSearchChange("endDate", e.target.value)}
         />
         <select
-          className="trahang-input"
+          className="trahang-input bg-light text-dark"
           value={searchFilters.status}
           onChange={(e) => handleSearchChange("status", e.target.value)}
         >
@@ -269,38 +269,21 @@ const ReturnImportedProduct = () => {
           <option value="PENDING">Đang xử lý</option>
           <option value="CANCELLED">Đã hủy</option>
         </select>
-        <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-          {" "}
+        <div>
           <button
+            className="search-btn"
             onClick={handleSearch}
             disabled={loading}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "14px",
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
+            style={{ display: 'block', width: '100%', marginBottom: 8 }}
           >
-            {loading ? "Đang tìm..." : "Tìm kiếm"}
+            {loading ? "Đang tìm..." : "🔍 Tìm kiếm"}
           </button>
           <button
+            className="search-btn"
             onClick={handleClearSearch}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              backgroundColor: "#6c757d",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "14px",
-              cursor: "pointer",
-            }}
+            style={{ backgroundColor: "#6c757d", width: '100%' }}
           >
-            Xóa bộ lọc
+            🗑️ Xóa bộ lọc
           </button>
         </div>
       </div>
@@ -344,59 +327,43 @@ const ReturnImportedProduct = () => {
             )}
             {/* Returns Table */}
             {!loading && (
-              <table className="trahang-table">
-                <thead>
+              <table className="table table-hover mb-0">
+                <thead className="table-danger text-center">
                   <tr>
-                    <th>Mã trả hàng nhập</th>
+                    <th>Mã trả hàng</th>
                     <th>Thời gian</th>
                     <th>Nhà cung cấp</th>
                     <th>Sản phẩm</th>
-                    <th>Số lượng trả</th>
+                    <th>Số lượng</th>
                     <th>Tham chiếu</th>
                     <th>Ghi chú</th>
                     <th>Trạng thái</th>
                     <th>Thao tác</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-center align-middle">
                   {displayedReturns.length > 0 ? (
                     displayedReturns.map((returnItem) => (
                       <tr key={returnItem.id}>
-                        <td>{generateReturnCode(returnItem.id)}</td>
-                        <td>{formatDateTime(returnItem.movementDate)}</td>
-                        <td>{getSupplierName(returnItem.partyId)}</td>
-                        <td>{getProductName(returnItem.productId)}</td>
-                        <td style={{ textAlign: "center" }}>
-                          {Math.abs(returnItem.quantity)}{" "}
-                          {/* Return quantities are negative, so show absolute */}
-                        </td>
-                        <td>{returnItem.documentReference || "-"}</td>
-                        <td>{returnItem.notes || "-"}</td>
                         <td>
-                          <span
-                            style={{
-                              padding: "4px 8px",
-                              borderRadius: "4px",
-                              fontSize: "12px",
-                              backgroundColor: "#d4edda",
-                              color: "#155724",
-                            }}
-                          >
-                            Hoàn thành
+                          <span className="badge bg-secondary">
+                            {generateReturnCode(returnItem.id)}
                           </span>
                         </td>
-                        <td style={{ textAlign: "center" }}>
+                        <td>{formatDateTime(returnItem.movementDate)}</td>
+                        <td>{getSupplierName(returnItem.partyId)}</td>
+                        <td className="fw-bold">{getProductName(returnItem.productId)}</td>
+                        <td>{Math.abs(returnItem.quantity)}</td>
+                        <td>{returnItem.documentReference || "-"}</td>
+                        <td className="text-start">{returnItem.notes || "-"}</td>
+                        <td>
+                          <span className="badge bg-success">Hoàn thành</span>
+                        </td>
+                        <td>
                           <button
                             onClick={() => handleViewDetails(returnItem)}
-                            style={{
-                              padding: "4px 8px",
-                              backgroundColor: "#007bff",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              fontSize: "12px",
-                              cursor: "pointer",
-                            }}
+                            className="btn btn-sm btn-primary"
+                            title="Xem chi tiết"
                           >
                             Xem
                           </button>
@@ -405,20 +372,14 @@ const ReturnImportedProduct = () => {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="9"
-                        style={{
-                          textAlign: "center",
-                          padding: "20px",
-                          color: "#666",
-                        }}
-                      >
+                      <td colSpan="9" className="text-center text-muted py-3">
                         {loading ? "Đang tải..." : "Không có dữ liệu phù hợp"}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+
             )}{" "}
             {/* Summary */}
             {displayedReturns.length > 0 && (

@@ -56,26 +56,31 @@ const Customer = () => {
                         <h2 className="kiemkho-title">KHÁCH HÀNG</h2>
                     </div>
 
-                    <table className="kiemkho-table">
-                        <thead>
+                    <table className="table table-hover mb-0">
+                        <thead className="table-primary text-center">
                             <tr>
-                                <th>ID</th>
-                                <th>Tên Khách Hàng</th>
+                                <th>Mã KH</th>
+                                <th>Tên khách hàng</th>
                                 <th>Số điện thoại</th>
                                 <th>Tổng tiền đã mua</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="text-center">
                             {customers.map((customer) => (
                                 <tr key={customer.id}>
-                                    <td>{customer.id}</td>
-                                    <td>{customer.name}</td>
+                                    <td>
+                                        <span className="badge bg-secondary">{customer.id}</span>
+                                    </td>
+                                    <td className="fw-bold">{customer.name}</td>
                                     <td>{customer.phone}</td>
-                                    <td>{(totalsMap[customer.id] || 0).toLocaleString()} VNĐ</td>
+                                    <td className="fw-bold text-success">
+                                        {(totalsMap[customer.id] || 0).toLocaleString()} VNĐ
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+
                     <nav className="mt-3">
                         <ul className="pagination justify-content-center">
                             {[...Array(totalPages).keys()].map((page) => (

@@ -48,7 +48,7 @@ const CategoryList = () => {
             } catch (error) {
                 console.error('Error fetching categories:', error);
             } finally {
-               
+
             }
         };
 
@@ -76,13 +76,13 @@ const CategoryList = () => {
         } catch (error) {
             console.error('Error fetching category details:', error);
         } finally {
-         
+
         }
     };
 
 
     const handleSearch = async (name) => {
-    
+
         try {
             const response = await fetch(`http://localhost:8080/api/inventory/categories/search?name=${encodeURIComponent(name)}`, {
                 headers: {
@@ -101,13 +101,13 @@ const CategoryList = () => {
         } catch (error) {
             console.error('Error searching categories:', error);
         } finally {
-            
+
         }
     };
 
 
     const handleNewCategory = async () => {
-       
+
 
         const payload = {
             name: newCategory.name,
@@ -140,7 +140,7 @@ const CategoryList = () => {
         } catch (error) {
             console.error('Error creating category:', error);
         } finally {
-           
+
         }
     };
 
@@ -224,24 +224,44 @@ const CategoryList = () => {
                             </div>
                         )}
 
-                        <table className="kiemkho-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã loại hàng</th>
-                                    <th>Tên loại hàng</th>
-                                    <th>Mô tả</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {categories.map((category) => (
-                                    <tr key={category.id} onClick={() => handleClickDetail(category.id)} style={{ cursor: 'pointer' }}>
-                                        <td>{category.id}</td>
-                                        <td>{category.name}</td>
-                                        <td>{category.description}</td>
+                        <div className="table-responsive">
+                            <table className="table table-hover mb-0 text-center">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>Mã danh mục</th>
+                                        <th>Tên danh mục</th>
+                                        <th>Mô tả</th>
+                                        <th></th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {categories.map((category) => (
+                                        <tr
+                                            key={category.id}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => handleClickDetail(category.id)}
+                                        >
+                                            <td>
+                                                <span className="badge bg-secondary">{category.id}</span>
+                                            </td>
+                                            <td className="fw-bold">{category.name}</td>
+                                            <td>{category.description || "Không có mô tả"}</td>
+                                            <td>
+                                                <button
+                                                    className="btn btn-warning fw-bold"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // ngăn click row
+                                                        handleClickDetail(category.id);
+                                                    }}
+                                                >
+                                                    Xem
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                         <nav className="mt-3">
                             <ul className="pagination justify-content-center">
                                 {[...Array(totalPages).keys()].map((page) => (
@@ -260,7 +280,7 @@ const CategoryList = () => {
             {show && categoryDetails && (
                 <div className="modal show fade d-block fs-5" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered" role="document" style={{ maxWidth: "95vw" }}>
-                        <div className="modal-content shadow-lg">
+                        <div className="modal-content shadow-lg mx-auto">
                             <div className="modal-header">
                                 <h5 className="modal-title">Danh sách sản phẩm</h5>
                                 <button type="button" className="btn-close" onClick={() => setShow(false)}></button>
@@ -269,24 +289,26 @@ const CategoryList = () => {
                                 {categoryDetails.length === 0 ? (
                                     <p>Không có sản phẩm nào.</p>
                                 ) : (
-                                    <table className="table table-bordered table-hover">
-                                        <thead className="table-light text-center">
+                                    <table className="table table-hover mb-0">
+                                        <thead className="table-light">
                                             <tr>
-                                                <th>Id</th>
+                                                <th>Mã SP</th>
                                                 <th>Tên sản phẩm</th>
                                                 <th>Đơn vị</th>
-                                                <th>Giá Nhập</th>
+                                                <th>Giá nhập</th>
                                                 <th>Giá bán</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="text-center">
+                                        <tbody>
                                             {categoryDetails.map((product) => (
                                                 <tr key={product.id}>
-                                                    <td>{product.id}</td>
-                                                    <td>{product.name}</td>
-                                                    <td>{product.unit}</td>
-                                                    <td>{product.purchasePrice} VNĐ</td>
-                                                    <td>{product.sellingPrice} VNĐ</td>
+                                                    <td>
+                                                        <span className="badge bg-secondary">{product.id}</span>
+                                                    </td>
+                                                    <td className="fw-bold">{product.name}</td>
+                                                    <td>{product.unit || "cái"}</td>
+                                                    <td>{product.purchasePrice?.toLocaleString()} VNĐ</td>
+                                                    <td>{product.sellingPrice?.toLocaleString()} VNĐ</td>
                                                 </tr>
                                             ))}
                                         </tbody>

@@ -225,68 +225,78 @@ export const useImportGoodsReturned = (options = {}) => {
 
     return validation;
   }, [state.currentGoodsReturn]);
-
   /**
    * Records the current goods return
+   * @param {Object} returnData - Optional return data to submit, if not provided uses state.currentGoodsReturn
    */
-  const recordGoodsReturn = useCallback(async () => {
-    // Validate before submission
-    const validation = validateCurrentGoodsReturn();
-    if (!validation.isValid) {
-      return { success: false, errors: validation.errors };
-    }
+  const recordGoodsReturn = useCallback(
+    async (returnData) => {
+      // Use provided data or current state
+      const dataToSubmit = returnData || state.currentGoodsReturn;
 
-    setLoading("recording", true);
-    setLoading("submitting", true);
-    setError("recording", null);
-
-    try {
-      // Cancel any previous request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+      // If using state data, validate before submission
+      if (!returnData) {
+        const validation = validateCurrentGoodsReturn();
+        if (!validation.isValid) {
+          return { success: false, errors: validation.errors };
+        }
       }
 
-      const response = await importGoodsReturnedService.recordGoodsReturn(
-        state.currentGoodsReturn
-      );
+      setLoading("recording", true);
+      setLoading("submitting", true);
+      setError("recording", null);
 
-      const successMsg = formatSuccessMessage(response);
+      try {
+        // Cancel any previous request
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
 
-      setState((prev) => ({
-        ...prev,
-        lastRecordedReturn: response,
-        successMessage: successMsg,
-        isFormDirty: false,
-      }));
+        console.log("Hook submitting data:", dataToSubmit); // Debug log
 
-      // Call success callback if provided
-      if (onSuccess) {
-        onSuccess(response, successMsg);
+        const response = await importGoodsReturnedService.recordGoodsReturn(
+          dataToSubmit
+        );
+
+        const successMsg = formatSuccessMessage(response);
+
+        setState((prev) => ({
+          ...prev,
+          lastRecordedReturn: response,
+          successMessage: successMsg,
+          isFormDirty: false,
+        }));
+
+        // Call success callback if provided
+        if (onSuccess) {
+          onSuccess(response, successMsg);
+        }
+
+        return { success: true, data: response, message: successMsg };
+      } catch (error) {
+        const errorMessage = error.message || "Failed to record goods return";
+        setError("recording", errorMessage);
+
+        // Call error callback if provided
+        if (onError) {
+          onError(error, errorMessage);
+        }
+
+        return { success: false, error: errorMessage };
+      } finally {
+        setLoading("recording", false);
+        setLoading("submitting", false);
       }
-
-      return { success: true, data: response, message: successMsg };
-    } catch (error) {
-      const errorMessage = error.message || "Failed to record goods return";
-      setError("recording", errorMessage);
-
-      // Call error callback if provided
-      if (onError) {
-        onError(error, errorMessage);
-      }
-
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading("recording", false);
-      setLoading("submitting", false);
-    }
-  }, [
-    state.currentGoodsReturn,
-    validateCurrentGoodsReturn,
-    setLoading,
-    setError,
-    onSuccess,
-    onError,
-  ]);
+    },
+    [
+      state.currentGoodsReturn,
+      validateCurrentGoodsReturn,
+      setLoading,
+      setError,
+      onSuccess,
+      onError,
+    ]
+  );
 
   /**
    * Fetches goods returns with optional filters

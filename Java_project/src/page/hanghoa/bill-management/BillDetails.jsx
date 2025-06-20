@@ -310,7 +310,7 @@ const BillDetails = () => {
               fontWeight: "bold",
             }}
           >
-            ${remainingBalance.toFixed(2)}
+            {remainingBalance.toLocaleString("vi-VN")} ₫
           </span>
         </div>
       </div>
@@ -456,9 +456,10 @@ const BillDetails = () => {
               <strong>Đã thanh toán:</strong> {currentBill?.amountPaid}
             </p>
             <p>
+              {" "}
               <strong>Còn lại:</strong>{" "}
               <span style={{ color: "#dc3545", fontWeight: "bold" }}>
-                ${remainingBalance.toFixed(2)}
+                {remainingBalance.toLocaleString("vi-VN")} ₫
               </span>
             </p>
           </div>

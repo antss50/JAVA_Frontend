@@ -9,17 +9,70 @@
  * @returns {Object} API-ready goods return object
  */
 export const formatGoodsReturnForApi = (goodsReturn) => {
-  if (!goodsReturn) return null;
+  try {
+    if (!goodsReturn) {
+      console.error("formatGoodsReturnForApi: No goodsReturn data provided");
+      return null;
+    }
 
-  return {
-    supplierId: goodsReturn.supplierId,
-    purchaseOrderId: goodsReturn.purchaseOrderId,
-    reason: goodsReturn.reason || "",
-    returnDate: goodsReturn.returnDate
-      ? new Date(goodsReturn.returnDate).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0],
-    lines: (goodsReturn.lines || []).map(formatGoodsReturnLineForApi),
-  };
+    console.log("Formatting goods return for API:", goodsReturn); // Debug log
+
+    // Support both old (purchaseOrderId) and new (billId) formats
+    const result = {
+      supplierId: parseInt(goodsReturn.supplierId),
+      reason: goodsReturn.reason || "",
+      returnDate: goodsReturn.returnDate
+        ? new Date(goodsReturn.returnDate).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      lines: (goodsReturn.lines || [])
+        .map(formatGoodsReturnLineForApi)
+        .filter((line) => line !== null), // Remove any null lines
+    };
+
+    console.log("Basic result object created:", result); // Debug log
+    // Send billId as purchaseOrderId if billId is provided and not empty
+    if (goodsReturn.billId && goodsReturn.billId.toString().trim() !== "") {
+      // Always convert billId to integer since backend expects integer
+      const billId = parseInt(goodsReturn.billId);
+      result.billId = billId;
+      result.purchaseOrderId = billId; // For backend compatibility
+      console.log("Setting billId and purchaseOrderId to:", billId); // Debug log
+    } else if (
+      goodsReturn.purchaseOrderId &&
+      goodsReturn.purchaseOrderId.toString().trim() !== ""
+    ) {
+      const purchaseOrderId = parseInt(goodsReturn.purchaseOrderId);
+      result.purchaseOrderId = purchaseOrderId;
+      console.log("Setting purchaseOrderId to:", purchaseOrderId); // Debug log
+    }
+
+    // Add returnedBy if provided
+    if (goodsReturn.returnedBy) {
+      result.returnedBy = goodsReturn.returnedBy;
+    }
+
+    // Add notes if provided
+    if (goodsReturn.notes) {
+      result.notes = goodsReturn.notes;
+    }
+    console.log("Formatted API payload:", result); // Debug log
+    console.log("Lines in payload:", result.lines); // Debug log
+
+    // Validate required fields
+    if (!result.supplierId) {
+      console.error("Missing supplierId in formatted data");
+    }
+    if (!result.purchaseOrderId && !result.billId) {
+      console.error("Missing purchaseOrderId/billId in formatted data");
+      console.error("Original goodsReturn data:", goodsReturn);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error in formatGoodsReturnForApi:", error);
+    console.error("Input data:", goodsReturn);
+    throw error;
+  }
 };
 
 /**
@@ -30,10 +83,78 @@ export const formatGoodsReturnForApi = (goodsReturn) => {
 export const formatGoodsReturnLineForApi = (line) => {
   if (!line) return null;
 
-  return {
-    productId: parseInt(line.productId),
-    quantityReturned: parseFloat(line.quantityReturned),
+  console.log("Formatting line for API:", line); // Debug log
+
+  // Extract quantity with better validation and type handling
+  const rawQuantity =
+    line.quantity ?? line.quantityReturned ?? line.quantityToReturn ?? 0;
+  let quantity = 0;
+
+  // Handle different data types for quantity
+  if (typeof rawQuantity === "string") {
+    // Remove any non-numeric characters except decimal point and minus
+    const cleanedQuantity = rawQuantity.replace(/[^\d.-]/g, "");
+    quantity = parseFloat(cleanedQuantity);
+  } else if (typeof rawQuantity === "number") {
+    quantity = rawQuantity;
+  } else {
+    quantity = 0;
+  } // Validate quantity but don't modify it
+  if (isNaN(quantity) || quantity <= 0) {
+    console.error("Invalid quantity detected:", rawQuantity, "->", quantity);
+    // Don't modify the quantity, let the backend handle validation
+  }
+
+  const productId = parseInt(line.productId);
+  console.log(
+    "Raw quantity:",
+    rawQuantity,
+    "Type:",
+    typeof rawQuantity,
+    "Parsed quantity:",
+    quantity,
+    "ProductId:",
+    productId
+  ); // Debug log
+  const result = {
+    productId: productId,
+    quantityReturned: parseFloat(quantity.toFixed(2)), // Ensure it's a proper float
   };
+
+  console.log("Created result object:", result); // Debug log
+
+  // Validate required fields
+  if (isNaN(result.productId) || result.productId <= 0) {
+    console.error(
+      "Invalid productId in line:",
+      line,
+      "Calculated productId:",
+      result.productId
+    );
+  }
+  if (result.quantityReturned <= 0 || isNaN(result.quantityReturned)) {
+    console.error(
+      "Invalid quantity in line:",
+      line,
+      "Calculated quantity:",
+      result.quantityReturned
+    );
+  }
+
+  // Add optional fields if provided
+  if (line.unitPrice) {
+    result.unitPrice = parseFloat(parseFloat(line.unitPrice).toFixed(2));
+  }
+
+  if (line.reason) {
+    result.reason = line.reason;
+  }
+
+  if (line.originalLineId || line.id) {
+    result.originalLineId = parseInt(line.originalLineId || line.id);
+  }
+
+  return result;
 };
 
 /**

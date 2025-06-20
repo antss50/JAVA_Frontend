@@ -78,12 +78,22 @@ class ImportGoodsReturnedService {
             "Conflict: Return already recorded for this product and purchase order"
         );
       }
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
+        console.error("Backend error response:", {
+          status: response.status,
+          statusText: response.statusText,
+          errorData: errorData,
+        });
+
+        // Extract more detailed error information
+        const errorMessage =
+          errorData.message ||
+          errorData.error ||
+          errorData.details ||
+          `HTTP error! status: ${response.status}`;
+
+        throw new Error(errorMessage);
       }
 
       // Handle empty responses (204 No Content)
@@ -100,24 +110,43 @@ class ImportGoodsReturnedService {
       throw error;
     }
   }
-
   /**
    * Records goods return to supplier
    * @param {Object} goodsReturnData - Goods return data
    * @returns {Promise<Object|Array>} Created goods return record(s)
-   */
-  async recordGoodsReturn(goodsReturnData) {
+   */ async recordGoodsReturn(goodsReturnData) {
     try {
-      const formattedData = formatGoodsReturnForApi(goodsReturnData);
+      console.log("Raw return data received:", goodsReturnData); // Debug log
+
+      let formattedData;
+      try {
+        formattedData = formatGoodsReturnForApi(goodsReturnData);
+      } catch (formatterError) {
+        console.error("Error in formatter:", formatterError);
+        throw new Error(`Data formatting failed: ${formatterError.message}`);
+      }
+      console.log("Formatted data for API:", formattedData); // Debug log
+
+      console.log(
+        "JSON payload being sent:",
+        JSON.stringify(formattedData, null, 2)
+      ); // Debug log
 
       if (!formattedData) {
-        throw new Error("Invalid goods return data provided");
+        throw new Error(
+          "Invalid goods return data provided - formatter returned null"
+        );
       }
+
+      console.log("About to send POST request to:", this.baseURL); // Debug log
 
       const response = await this.apiCall(this.baseURL, {
         method: "POST",
         body: JSON.stringify(formattedData),
       });
+
+      console.log("Response received - status:", response?.status); // Debug log
+      console.log("API response:", response); // Debug log
 
       // Format response data for frontend consumption
       return formatGoodsReturnFromApi(response);
@@ -246,7 +275,6 @@ class ImportGoodsReturnedService {
       return { success: false, error: formattedError };
     }
   }
-
   /**
    * Gets detailed information about a bill that can be returned
    * @param {number|string} billId - Bill ID
@@ -263,7 +291,7 @@ class ImportGoodsReturnedService {
 
       return {
         success: true,
-        data: formatGoodsReturnFromApi(response),
+        data: response, // Return raw response as it already has the correct structure
       };
     } catch (error) {
       const formattedError = formatApiError(error);

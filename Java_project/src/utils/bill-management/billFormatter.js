@@ -301,9 +301,9 @@ export const validateBillData = (billData) => {
  */
 export const formatCurrency = (amount) => {
   const numAmount = parseFloat(amount) || 0;
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("vi-VN", {
     style: "currency",
-    currency: "USD",
+    currency: "VND",
   }).format(numAmount);
 };
 

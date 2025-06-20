@@ -395,7 +395,7 @@ const PurchaseOrderForm = () => {
             <th>Tên sản phẩm</th>
             <th>Tồn kho hiện tại</th>
             <th>Số lượng đặt hàng</th>
-            <th>Đơn giá (USD)</th>
+            <th>Đơn giá (VNĐ)</th>
             <th>Thành tiền</th>
             <th>Mô tả</th>
             <th>Thao tác</th>
@@ -587,12 +587,12 @@ const PurchaseOrderForm = () => {
               backgroundColor: "#f8f9fa",
             }}
           />
-        </label>
+        </label>{" "}
         <label>
-          Tổng giá trị (USD)
+          Tổng giá trị (VNĐ)
           <input
             type="text"
-            value={`$${totalAmount.toFixed(2)}`}
+            value={`${totalAmount.toLocaleString("vi-VN")} ₫`}
             readOnly
             className="readonly-input bg-light text-dark"
             style={{
@@ -707,8 +707,9 @@ const PurchaseOrderForm = () => {
                   color: "#28a745",
                 }}
               >
-                $
-                {createdOrder.totalAmount?.toFixed(2) || totalAmount.toFixed(2)}
+                {createdOrder.totalAmount?.toLocaleString("vi-VN") ||
+                  totalAmount.toLocaleString("vi-VN")}{" "}
+                ₫
               </span>
             </p>
             <p>

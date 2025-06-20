@@ -16,6 +16,16 @@ const BillForm = () => {
   const navigate = useNavigate();
   const { billId } = useParams(); // For editing existing bills
   const isEditMode = !!billId;
+
+  // Helper function to format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return "0 ₫";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
   const {
     currentBill,
     loading,
@@ -442,10 +452,11 @@ const BillForm = () => {
         <label
           style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}
         >
+          {" "}
           Tổng tiền
           <input
             type="text"
-            value={`$${calculateBillTotal().toFixed(2)}`}
+            value={`${calculateBillTotal().toLocaleString("vi-VN")} ₫`}
             readOnly
             style={{
               width: "100%",
@@ -523,7 +534,7 @@ const BillForm = () => {
             <th>Sản phẩm</th>
             <th>Mô tả</th>
             <th>Số lượng</th>
-            <th>Đơn giá (USD)</th>
+            <th>Đơn giá (VNĐ)</th>
             <th>Thành tiền</th>
             <th>Thao tác</th>
           </tr>

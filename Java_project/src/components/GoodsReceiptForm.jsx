@@ -547,8 +547,9 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                 </option>
                 {filteredBills.map((bill) => (
                   <option key={bill.id} value={bill.id}>
+                    {" "}
                     {bill.billNumber} - {bill.vendorName} (
-                    {bill.totalAmount.toLocaleString()}đ)
+                    {bill.totalAmount.toLocaleString("vi-VN")}đ)
                   </option>
                 ))}
               </select>

@@ -225,7 +225,7 @@ const ProductList = () => {
                     {showCreateModal && (
                         <div className="modal show fade d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                             <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "95vw" }}>
-                                <div className="modal-content">
+                                <div className="modal-content mx-auto">
                                     <div className="modal-header">
                                         <button className="btn-close" onClick={() => setShowCreateModal(false)} />
                                     </div>
@@ -310,52 +310,59 @@ const ProductList = () => {
                             </div>
                         </div>
                     )}
-
-                    <table className="kiemkho-table">
-                        <thead className="text-center">
-                            <tr>
-                                <th>Id</th>
-                                <th>Tên Sản Phẩm</th>
-                                <th>Phân Loại</th>
-                                <th>Đơn Vị</th>
-                                <th>Giá Nhập</th>
-                                <th>Giá Bán</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map((product) => (
-                                <tr key={product.id}>
-                                    <td>{product.id}</td>
-                                    <td>{product.name}</td>
-                                    <td>{product.categoryName}</td>
-                                    <td>{product.unit}</td>
-                                    <td>{product.purchasePrice} VNĐ</td>
-                                    <td>{product.sellingPrice} VNĐ</td>
-                                    <td>
-                                        {/* <button className="btn btn-danger fs-5 p-0 px-2" onClick={() => handleDeteleProduct(product.id)}>🗑︎</button> */}
-                                        <button
-                                            className="btn btn-warning fw-bold"
-                                            onClick={() => {
-                                                setEditProductId(product.id);
-                                                setNewProduct({
-                                                    categoryId: product.categoryId,
-                                                    name: product.name,
-                                                    unit: product.unit,
-                                                    purchasePrice: product.purchasePrice,
-                                                    sellingPrice: product.sellingPrice,
-                                                });
-                                                setShowCreateModal(true);
-                                            }}
-                                        >
-                                            Cập Nhật
-                                        </button>
-
-                                    </td>
+                    <div className="table-responsive">
+                        <table className="table table-hover mb-0">
+                            <thead className="table-light">
+                                <tr>
+                                    <th>Mã SP</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Đơn vị</th>
+                                    <th>Giá nhập</th>
+                                    <th>Giá bán</th>
+                                    <th></th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {products.map((product) => (
+                                    <tr key={product.id}>
+                                        <td>
+                                            <span className="badge bg-secondary">{product.id || "N/A"}</span>
+                                        </td>
+                                        <td>
+                                            <div className="fw-bold">{product.name || "Tên không xác định"}</div>
+                                        </td>
+                                        <td>
+                                            <span className="badge bg-light text-dark">
+                                                {product.categoryName || product.category?.name || "Chưa phân loại"}
+                                            </span>
+                                        </td>
+                                        <td>{product.unit || "cái"}</td>
+                                        <td>{product.purchasePrice?.toLocaleString()} VNĐ</td>
+                                        <td>{product.sellingPrice?.toLocaleString()} VNĐ</td>
+                                        <td>
+                                            <button
+                                                className="btn btn-warning fw-bold"
+                                                onClick={() => {
+                                                    setEditProductId(product.id);
+                                                    setNewProduct({
+                                                        categoryId: product.categoryId,
+                                                        name: product.name,
+                                                        unit: product.unit,
+                                                        purchasePrice: product.purchasePrice,
+                                                        sellingPrice: product.sellingPrice,
+                                                    });
+                                                    setShowCreateModal(true);
+                                                }}
+                                            >
+                                                Cập Nhật
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     <nav className="mt-3">
                         <ul className="pagination justify-content-center">

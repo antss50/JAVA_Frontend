@@ -223,7 +223,7 @@ const ReturnImportedProduct = () => {
   return (
     <div className="trahang-container full-container">
       {/* Search Box */}
-      <div className="trahang-search-box">
+      <div className="danhmuc-search-box">
         <h4>Tìm kiếm</h4>
         <input
           type="text"
@@ -269,38 +269,21 @@ const ReturnImportedProduct = () => {
           <option value="PENDING">Đang xử lý</option>
           <option value="CANCELLED">Đã hủy</option>
         </select>
-        <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-          {" "}
+        <div>
           <button
+            className="search-btn"
             onClick={handleSearch}
             disabled={loading}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "14px",
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
+            style={{ display: 'block', width: '100%', marginBottom: 8 }}
           >
-            {loading ? "Đang tìm..." : "Tìm kiếm"}
+            {loading ? "Đang tìm..." : "🔍 Tìm kiếm"}
           </button>
           <button
+            className="search-btn"
             onClick={handleClearSearch}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              backgroundColor: "#6c757d",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "14px",
-              cursor: "pointer",
-            }}
+            style={{ backgroundColor: "#6c757d", width: '100%' }}
           >
-            Xóa bộ lọc
+            🗑️ Xóa bộ lọc
           </button>
         </div>
       </div>

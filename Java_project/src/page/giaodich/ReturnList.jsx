@@ -31,29 +31,31 @@ const ReturnList = () => {
     return (
         <div className="full-container mt-4">
             <div className="p-5">
-                <h3 className="mb-5">Danh sách phiếu trả hàng</h3>
-            <table className="kiemkho-table">
-                <thead>
-                    <tr>
-                        <th>Mã phiếu</th>
-                        <th>Sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Ngày trả</th>
-                        <th>Ghi chú</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {returns.map((item) => (
-                        <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>{item.productName}</td>
-                            <td>{item.quantity}</td>
-                            <td>{new Date(item.eventTimestamp).toLocaleString("vi-VN")}</td>
-                            <td>{item.notes}</td>
+                <h3 className="mb-5">PHIẾU TRẢ HÀNG</h3>
+                <table className="table table-hover mb-0">
+                    <thead className="table-primary text-center">
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Ngày trả</th>
+                            <th>Ghi chú</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="text-center">
+                        {returns.map((item) => (
+                            <tr key={item.id}>
+                                <td>
+                                    <span className="badge bg-secondary">{item.id}</span>
+                                </td>
+                                <td className="fw-bold">{item.productName}</td>
+                                <td>{item.quantity}</td>
+                                <td>{new Date(item.eventTimestamp).toLocaleString("vi-VN")}</td>
+                                <td>{item.notes || "Không có ghi chú"}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

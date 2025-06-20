@@ -11,7 +11,6 @@ const Navbar = () => {
         { to: "/hang-hoa/san-pham", label: "Sản Phẩm" },
         { to: "/hang-hoa/kho", label: "Kho" },
         { to: "/hang-hoa/kiem-kho", label: "Kiểm kho" },
-        { to: "/hang-hoa/bill-management", label: "Quản lý hóa đơn" }, // Added Bill Management
       ],
     },
     giaoDich: {
@@ -22,6 +21,7 @@ const Navbar = () => {
         { to: "/giao-dich/nhap-hang", label: "Nhập hàng" },
         { to: "/giao-dich/tra-hang-nhap", label: "Trả hàng nhập" },
         { to: "/giao-dich/xuat-huy", label: "Xuất huỷ" },
+        { to: "/hang-hoa/bill-management", label: "Lịch sử nhập hàng" },
       ],
     },
     doiTac: {

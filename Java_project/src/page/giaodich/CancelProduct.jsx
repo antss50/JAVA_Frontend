@@ -364,7 +364,7 @@ const CancelProduct = () => {
   return (
     <div className="xuathuy-container full-container">
       {/* Search Filters */}
-      <div className="xuathuy-search-box">
+      <div className="danhmuc-search-box">
         <h4>Tìm kiếm</h4>
         <div className="search-row">
           <input

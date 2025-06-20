@@ -44,29 +44,31 @@ const Provider = () => {
                     <div className="kiemkho-header">
                         <h2 className="kiemkho-title">NHÀ CUNG CẤP</h2>
                     </div>
-
-                    <table className="kiemkho-table">
-                        <thead>
+                    <table className="table table-hover mb-0">
+                        <thead className="table-light text-center">
                             <tr>
-                                <th>ID</th>
+                                <th>Mã NCC</th>
                                 <th>Tên nhà cung cấp</th>
                                 <th>Số điện thoại</th>
                                 <th>Email</th>
                                 <th>Địa chỉ</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="text-center">
                             {providers.map((provider) => (
                                 <tr key={provider.id}>
-                                    <td>{provider.id}</td>
-                                    <td>{provider.name}</td>
+                                    <td>
+                                        <span className="badge bg-secondary">{provider.id}</span>
+                                    </td>
+                                    <td className="fw-bold">{provider.name}</td>
                                     <td>{provider.phone}</td>
-                                    <td>{provider.email}</td>
-                                    <td>{provider.address}</td>
+                                    <td>{provider.email || "Chưa có email"}</td>
+                                    <td>{provider.address || "Chưa có địa chỉ"}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+
                     <nav className="mt-3">
                         <ul className="pagination justify-content-center">
                             {[...Array(totalPages).keys()].map((page) => (

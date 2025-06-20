@@ -99,7 +99,7 @@ const Invoice = () => {
     };
 
     return (
-        
+
         <div className="full-container">
             <div className="kiemkho-container">
                 <div className="kiemkho-main-content m-0 container-fluid">
@@ -122,7 +122,7 @@ const Invoice = () => {
                     {show && invoiceDetails && (
                         <div className="modal show fade d-block fs-5" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                             <div className="modal-dialog modal-lg modal-dialog-centered" role="document" style={{ maxWidth: "95vw" }}>
-                                <div className="modal-content shadow-lg">
+                                <div className="modal-content shadow-lg mx-auto">
                                     <div className="modal-header">
                                         <h5 className="modal-title">Chi Tiết Hoá Đơn</h5>
                                         <button type="button" className="btn-close" onClick={() => setShow(false)}></button>
@@ -133,24 +133,28 @@ const Invoice = () => {
                                         <p><strong>Ngày Lập:</strong> {invoiceDetails.invoiceDate}</p>
                                         <hr />
                                         <h5>Danh sách sản phẩm:</h5>
-                                        <table className="table">
-                                            <thead>
-                                                <tr className="text-center">
-                                                    <th>ID</th>
+                                        <table className="table table-hover mb-0">
+                                            <thead className="table-light text-center">
+                                                <tr>
+                                                    <th>Mã SP</th>
                                                     <th>Tên sản phẩm</th>
                                                     <th>Số lượng</th>
                                                     <th>Đơn giá</th>
                                                     <th>Thành tiền</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody className="text-center">
                                                 {orderLines.map((item, index) => (
-                                                    <tr key={index} className="text-center">
-                                                        <td>{item.productId}</td>
-                                                        <td>{item.productName}</td>
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <span className="badge bg-secondary">{item.productId}</span>
+                                                        </td>
+                                                        <td className="fw-bold">{item.productName}</td>
                                                         <td>{item.quantity}</td>
-                                                        <td>{item.unitPrice.toLocaleString()} VNĐ</td>
-                                                        <td>{item.lineTotal.toLocaleString()} VNĐ</td>
+                                                        <td>{item.unitPrice?.toLocaleString()} VNĐ</td>
+                                                        <td className="fw-bold text-danger">
+                                                            {item.lineTotal?.toLocaleString()} VNĐ
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -177,10 +181,10 @@ const Invoice = () => {
                     )}
 
 
-                    <table className="kiemkho-table">
-                        <thead>
+                    <table className="table table-hover mb-0">
+                        <thead className="table-primary text-center">
                             <tr>
-                                <th>Mã Hoá Đơn</th>
+                                <th>Mã Hóa Đơn</th>
                                 <th>Mã Khách Hàng</th>
                                 <th>Tên Khách Hàng</th>
                                 <th>Mã Đơn Hàng</th>
@@ -188,14 +192,22 @@ const Invoice = () => {
                                 <th>Ngày Lập</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="text-center">
                             {invoices.map((invoice) => (
-                                <tr key={invoice.id} onClick={() => handleClickDetail(invoice.id)} style={{ cursor: 'pointer' }}>
-                                    <td>{invoice.invoiceNumber}</td>
+                                <tr
+                                    key={invoice.id}
+                                    onClick={() => handleClickDetail(invoice.id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <td>
+                                        <span className="badge bg-secondary">{invoice.invoiceNumber}</span>
+                                    </td>
                                     <td>{invoice.customerId}</td>
-                                    <td>{invoice.customerName}</td>
+                                    <td className="fw-bold">{invoice.customerName}</td>
                                     <td>{invoice.orderId}</td>
-                                    <td>{invoice.totalAmount.toLocaleString()} VNĐ</td>
+                                    <td className="fw-bold text-danger">
+                                        {invoice.totalAmount?.toLocaleString()} VNĐ
+                                    </td>
                                     <td>{new Date(invoice.invoiceDate).toLocaleString()}</td>
                                 </tr>
                             ))}

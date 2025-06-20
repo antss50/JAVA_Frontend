@@ -235,7 +235,7 @@ const ImportProduct = () => {
 
   return (
     <div className="nhaphang-container full-container">
-      <div className="nhaphang-search-box">
+      <div className="danhmuc-search-box">
         <h4>Tìm kiếm phiếu nhập hàng</h4>
         <div
           style={{
@@ -285,20 +285,21 @@ const ImportProduct = () => {
             onChange={(e) => handleSearchChange("endDate", e.target.value)}
           />
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="">
           <button
-            className="nhaphang-button"
+            className="search-btn"
             onClick={handleSearch}
             disabled={loading}
+            style={{ display: 'block', width: '100%', marginBottom: 8 }}
           >
-            {loading ? "Đang tìm..." : "Tìm kiếm"}
+            {loading ? "Đang tìm..." : "🔍 Tìm kiếm"}
           </button>
           <button
-            className="nhaphang-button"
+            className="search-btn"
             onClick={handleClearSearch}
-            style={{ backgroundColor: "#6c757d" }}
+            style={{ backgroundColor: "#6c757d", width: '100%' }}
           >
-            Xóa bộ lọc
+            🗑️ Xóa bộ lọc
           </button>
         </div>
       </div>

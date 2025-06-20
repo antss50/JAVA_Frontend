@@ -177,7 +177,7 @@ const CategoryList = () => {
                         {showCreateModal && (
                             <div className="modal show fade d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                                 <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "95vw" }}>
-                                    <div className="modal-content">
+                                    <div className="modal-content mx-auto">
                                         <div className="modal-header">
                                             <h5 className="modal-title">Tạo Danh Mục Mới</h5>
                                             <button className="btn-close" onClick={() => setShowCreateModal(false)} />

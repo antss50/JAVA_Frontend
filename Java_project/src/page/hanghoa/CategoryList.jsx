@@ -225,7 +225,7 @@ const CategoryList = () => {
                         )}
 
                         <div className="table-responsive">
-                            <table className="table table-hover mb-0">
+                            <table className="table table-hover mb-0 text-center">
                                 <thead className="table-light">
                                     <tr>
                                         <th>Mã danh mục</th>
@@ -290,7 +290,7 @@ const CategoryList = () => {
                                     <p>Không có sản phẩm nào.</p>
                                 ) : (
                                     <table className="table table-hover mb-0">
-                                        <thead className="table-light text-center">
+                                        <thead className="table-light">
                                             <tr>
                                                 <th>Mã SP</th>
                                                 <th>Tên sản phẩm</th>
@@ -299,7 +299,7 @@ const CategoryList = () => {
                                                 <th>Giá bán</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="text-center">
+                                        <tbody>
                                             {categoryDetails.map((product) => (
                                                 <tr key={product.id}>
                                                     <td>

@@ -391,34 +391,32 @@ const ProductReport = () => {
                     currentReport.productSalesDetails.length > 0 && (
                       <div className="product-details">
                         <h4 className="mb-4">Chi tiết bán hàng theo sản phẩm</h4>
-                        <table className="product-table">
-                          <thead>
+                        <table className="table table-hover mb-0">
+                          <thead className="table-primary text-center">
                             <tr>
-                              <th>Sản phẩm</th>
+                              <th>Tên sản phẩm</th>
                               <th>Danh mục</th>
                               <th>Số lượng bán</th>
                               <th>Doanh thu</th>
                               <th>Giá trung bình</th>
                             </tr>
                           </thead>
-                          <tbody>
-                            {currentReport.productSalesDetails.map(
-                              (product, index) => (
-                                <tr key={index}>
-                                  <td>{product.productName}</td>
-                                  <td>{product.category}</td>
-                                  <td>
-                                    {product.quantitySold?.toLocaleString()}
-                                  </td>
-                                  <td>
-                                    {product.totalRevenue?.toLocaleString()} VNĐ
-                                  </td>
-                                  <td>
-                                    {product.averagePrice?.toLocaleString()} VNĐ
-                                  </td>
-                                </tr>
-                              )
-                            )}
+                          <tbody className="text-center">
+                            {currentReport.productSalesDetails.map((product, index) => (
+                              <tr key={index}>
+                                <td className="fw-bold">{product.productName}</td>
+                                <td>
+                                  <span className="badge bg-light text-dark">
+                                    {product.category || "Không rõ"}
+                                  </span>
+                                </td>
+                                <td>{product.quantitySold?.toLocaleString() || 0}</td>
+                                <td className="fw-bold text-success">
+                                  {product.totalRevenue?.toLocaleString()} VNĐ
+                                </td>
+                                <td>{product.averagePrice?.toLocaleString()} VNĐ</td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                       </div>

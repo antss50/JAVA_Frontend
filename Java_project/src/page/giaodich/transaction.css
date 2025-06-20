@@ -559,13 +559,16 @@
 }
 
 .modal-content {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 1200px;
+  background-color: #fff; 
+  padding: 24px;
+  border-radius: 10px;
+  max-width: 800px;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .disposal-form-modal {
@@ -591,19 +594,14 @@
   color: #333;
 }
 
-.close-btn {
-  background: none;
+.close-btn,
+.close-modal-btn {
+  background-color: #6c757d;
+  color: white;
   border: none;
-  font-size: 24px;
+  padding: 6px 12px;
+  border-radius: 5px;
   cursor: pointer;
-  color: #666;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
 }
 
 .close-btn:hover {
@@ -1002,24 +1000,19 @@
 
 .detail-table {
   width: 100%;
+  margin-top: 12px;
   border-collapse: collapse;
-  font-size: 14px;
+}
+
+.detail-table th,
+.detail-table td {
   border: 1px solid #dee2e6;
-  border-radius: 6px;
-  overflow: hidden;
+  padding: 8px 12px;
+  text-align: left;
 }
 
 .detail-table th {
   background-color: #f8f9fa;
-  padding: 10px 12px;
-  text-align: left;
-  font-weight: 500;
-  border-bottom: 1px solid #dee2e6;
-}
-
-.detail-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #f8f9fa;
 }
 
 .detail-table tbody tr:last-child td {
@@ -1027,13 +1020,11 @@
 }
 
 .notes-content {
-  background-color: #f8f9fa;
+  background-color: #f1f1f1;
   padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 0;
+  border-radius: 8px;
   white-space: pre-wrap;
+  color: #333;
 }
 
 /* Responsive design */

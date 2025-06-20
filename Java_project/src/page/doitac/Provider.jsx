@@ -45,7 +45,7 @@ const Provider = () => {
                         <h2 className="kiemkho-title">NHÀ CUNG CẤP</h2>
                     </div>
                     <table className="table table-hover mb-0">
-                        <thead className="table-light text-center">
+                        <thead className="table-primary text-center">
                             <tr>
                                 <th>Mã NCC</th>
                                 <th>Tên nhà cung cấp</th>

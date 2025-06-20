@@ -286,7 +286,7 @@ const Stock = () => {
         {" "}
         {/* Header with Statistics */}
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fw-bold">Quản lý Kho</h2>
+          <h2 className="fw-bold fs-4">QUẢN LÝ KHO</h2>
           <button
             className="btn btn-primary"
             onClick={handleRefresh}
@@ -350,7 +350,7 @@ const Stock = () => {
             ) : (
               <>
                 <div className="table-responsive">
-                  <table className="table table-hover mb-0">
+                  <table className="table table-hover mb-0 text-center">
                     <thead className="table-light">
                       <tr>
                         <th>Mã SP</th>

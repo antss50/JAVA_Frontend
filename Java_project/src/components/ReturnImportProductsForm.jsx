@@ -408,6 +408,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                   fontSize: "14px",
                 }}
+                className="bg-light"
               />
               <button
                 onClick={() => handleBillSearch()}

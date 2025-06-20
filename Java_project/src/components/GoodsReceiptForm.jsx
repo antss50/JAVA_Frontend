@@ -521,6 +521,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   marginBottom: "5px",
                   fontSize: "14px",
                 }}
+                className="bg-light"
               />
 
               {/* Bill Selection */}
@@ -539,6 +540,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 disabled={billLoading.bills}
+                className="bg-light text-dark"
               >
                 <option value="">
                   {billLoading.bills ? "Đang tải..." : "Chọn hóa đơn..."}
@@ -673,6 +675,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 placeholder="Nhập số tham chiếu..."
+                className="bg-light"
               />
             </div>
             {/* Received By */}
@@ -702,6 +705,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 placeholder="Nhập tên người nhận..."
+                className="bg-light"
               />
             </div>
             {/* Notes */}
@@ -728,6 +732,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 placeholder="Nhập ghi chú..."
+                className="bg-light"
               />
             </div>
           </div>

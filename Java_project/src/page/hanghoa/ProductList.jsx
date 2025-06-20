@@ -311,7 +311,7 @@ const ProductList = () => {
                         </div>
                     )}
                     <div className="table-responsive">
-                        <table className="table table-hover mb-0">
+                        <table className="table table-hover mb-0 text-center">
                             <thead className="table-light">
                                 <tr>
                                     <th>Mã SP</th>

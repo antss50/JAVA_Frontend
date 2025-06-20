@@ -171,7 +171,7 @@ const SaleOrder = () => {
                 <div className="left-container">
                     <div className="sale-analyze-left rounded-2">
                         <table className="table table-hover mb-0">
-                            <thead className="table-light text-center">
+                            <thead className="table-primary text-center">
                                 <tr>
                                     <th>Mã SP</th>
                                     <th>Tên sản phẩm</th>

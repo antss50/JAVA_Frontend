@@ -248,7 +248,7 @@ const ImportProduct = () => {
           <input
             type="text"
             placeholder="Nhập mã nhập hàng"
-            className="nhaphang-input"
+            className="nhaphang-input bg-light"
             value={searchFilters.documentReference}
             onChange={(e) =>
               handleSearchChange("documentReference", e.target.value)
@@ -257,7 +257,7 @@ const ImportProduct = () => {
           <input
             type="text"
             placeholder="Nhập tên hoặc mã nhà cung cấp"
-            className="nhaphang-input"
+            className="nhaphang-input bg-light"
             value={searchFilters.vendorId}
             onChange={(e) => handleSearchChange("vendorId", e.target.value)}
           />
@@ -273,14 +273,14 @@ const ImportProduct = () => {
           <input
             type="date"
             placeholder="Từ ngày"
-            className="nhaphang-input"
+            className="nhaphang-input bg-light text-dark"
             value={searchFilters.startDate}
             onChange={(e) => handleSearchChange("startDate", e.target.value)}
           />
           <input
             type="date"
             placeholder="Đến ngày"
-            className="nhaphang-input"
+            className="nhaphang-input bg-light text-dark"
             value={searchFilters.endDate}
             onChange={(e) => handleSearchChange("endDate", e.target.value)}
           />
@@ -363,68 +363,54 @@ const ImportProduct = () => {
         {/* Summary View - Grouped by receipt */}
         {viewMode === "summary" && (
           <>
-            <table className="nhaphang-table">
-              <thead>
+            <table className="table table-hover mb-0 text-center">
+              <thead className="table-primary">
                 <tr>
                   <th>Mã nhập hàng</th>
                   <th>Thời gian</th>
                   <th>Kho nhận</th>
                   <th>Số mặt hàng</th>
-                  <th>Tổng số lượng</th>
+                  <th>Tổng SL</th>
                   <th>Người nhận</th>
                   <th>Trạng thái</th>
                   <th>Ghi chú</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="align-middle">
                 {groupedReceipts.length > 0 ? (
                   groupedReceipts.map((receipt, index) => (
                     <tr key={receipt.documentReference || index}>
-                      <td>{receipt.documentReference}</td>
+                      <td>
+                        <span className="badge bg-secondary">{receipt.documentReference}</span>
+                      </td>
                       <td>{formatDateTime(receipt.eventTimestamp)}</td>
                       <td>{receipt.warehouseName || "Kho chính"}</td>
                       <td>{receipt.itemCount}</td>
-                      <td>{receipt.totalQuantity.toLocaleString()}</td>
+                      <td>{receipt.totalQuantity?.toLocaleString()}</td>
                       <td>{receipt.userId || "N/A"}</td>
                       <td>
                         <span
-                          style={{
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            fontSize: "12px",
-                            backgroundColor:
-                              getReceiptStatus(receipt) === "Hoàn tất"
-                                ? "#d4edda"
-                                : "#fff3cd",
-                            color:
-                              getReceiptStatus(receipt) === "Hoàn tất"
-                                ? "#155724"
-                                : "#856404",
-                            border: `1px solid ${
-                              getReceiptStatus(receipt) === "Hoàn tất"
-                                ? "#c3e6cb"
-                                : "#ffeaa7"
-                            }`,
-                          }}
+                          className={`badge ${getReceiptStatus(receipt) === "Hoàn tất"
+                            ? "bg-success"
+                            : "bg-warning text-dark"
+                            }`}
                         >
                           {getReceiptStatus(receipt)}
                         </span>
                       </td>
-                      <td>{receipt.notes || ""}</td>
+                      <td className="text-start">{receipt.notes || ""}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan="8"
-                      style={{ textAlign: "center", padding: "20px" }}
-                    >
+                    <td colSpan="8" className="text-muted py-3">
                       {loading ? "Đang tải..." : "Không có phiếu nhập hàng nào"}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+
 
             {groupedReceipts.length > 0 && (
               <div
@@ -446,8 +432,8 @@ const ImportProduct = () => {
         {/* Detailed View - Individual lines */}
         {viewMode === "detailed" && (
           <>
-            <table className="nhaphang-table">
-              <thead>
+            <table className="table table-hover mb-0">
+              <thead className="table-primary text-center">
                 <tr>
                   <th>Mã nhập hàng</th>
                   <th>Sản phẩm</th>
@@ -460,60 +446,44 @@ const ImportProduct = () => {
                   <th>Ghi chú</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-center align-middle">
                 {filteredMovements.length > 0 ? (
                   filteredMovements.map((movement, index) => (
                     <tr key={movement.id || index}>
-                      <td>{movement.documentReference}</td>
-                      <td>{movement.productName}</td>
+                      <td>
+                        <span className="badge bg-secondary">{movement.documentReference}</span>
+                      </td>
+                      <td className="fw-bold">{movement.productName}</td>
                       <td>{movement.productUnit}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {movement.quantity
-                          ? movement.quantity.toLocaleString()
-                          : "0"}
+                      <td className="text-end">
+                        {movement.quantity?.toLocaleString() || "0"}
                       </td>
                       <td>{movement.warehouseName || "Kho chính"}</td>
                       <td>{formatDateTime(movement.eventTimestamp)}</td>
                       <td>{movement.userId || "N/A"}</td>
                       <td>
                         <span
-                          style={{
-                            padding: "2px 6px",
-                            borderRadius: "3px",
-                            fontSize: "11px",
-                            backgroundColor:
-                              movement.referenceType === "GOODS_RECEIPT"
-                                ? "#e3f2fd"
-                                : "#fff3e0",
-                            color:
-                              movement.referenceType === "GOODS_RECEIPT"
-                                ? "#1565c0"
-                                : "#ef6c00",
-                            border: `1px solid ${
-                              movement.referenceType === "GOODS_RECEIPT"
-                                ? "#bbdefb"
-                                : "#ffcc02"
-                            }`,
-                          }}
+                          className={`badge ${movement.referenceType === "GOODS_RECEIPT"
+                              ? "bg-primary"
+                              : "bg-warning text-dark"
+                            }`}
                         >
                           {movement.referenceType || "N/A"}
                         </span>
                       </td>
-                      <td>{movement.notes || ""}</td>
+                      <td className="text-start">{movement.notes || ""}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan="9"
-                      style={{ textAlign: "center", padding: "20px" }}
-                    >
+                    <td colSpan="9" className="text-muted py-3">
                       {loading ? "Đang tải..." : "Không có dữ liệu chi tiết"}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+
 
             {filteredMovements.length > 0 && (
               <div

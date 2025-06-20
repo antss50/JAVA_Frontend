@@ -188,8 +188,8 @@ const StockCheckManagement = () => {
       item.checkStatus === "SHORTAGE"
         ? Math.abs(item.variance)
         : item.checkStatus === "OVERAGE"
-        ? -Math.abs(item.variance)
-        : 0;
+          ? -Math.abs(item.variance)
+          : 0;
 
     setAdjustmentData({
       quantityChange: suggestedChange.toString(),
@@ -239,10 +239,8 @@ const StockCheckManagement = () => {
 
       // Show success message with details
       alert(
-        `Stock adjustment completed successfully!\n\nProduct: ${
-          adjustmentItem.productName
-        }\nAdjustment: ${adjustmentData.quantityChange}\nMovement Type: ${
-          result?.movementType || "ADJUSTMENT"
+        `Stock adjustment completed successfully!\n\nProduct: ${adjustmentItem.productName
+        }\nAdjustment: ${adjustmentData.quantityChange}\nMovement Type: ${result?.movementType || "ADJUSTMENT"
         }`
       );
 
@@ -386,8 +384,8 @@ const StockCheckManagement = () => {
   );
 
   const renderStockCheckTable = () => (
-    <table className="kiemkho-table">
-      <thead>
+    <table className="table table-hover mb-0">
+      <thead className="table-light text-center">
         <tr>
           <th>Mã kiểm kho</th>
           <th>Tên sản phẩm</th>
@@ -400,62 +398,62 @@ const StockCheckManagement = () => {
           <th>Thao tác</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody className="text-center align-middle">
         {stockCheckResults.length === 0 ? (
           <tr>
-            <td colSpan="9" className="no-data">
+            <td colSpan="9" className="text-muted">
               {resultsLoading ? "Đang tải..." : "Không có dữ liệu"}
             </td>
           </tr>
         ) : (
           stockCheckResults.map((result, index) => {
             return (
-              <tr
-                key={
-                  result.checkResultId ||
-                  result.productId ||
-                  result.checkReference
-                }
-                className={`status-${result.statusColor}`}
-              >
-                <td>{result.checkReference}</td>
-                <td>{result.productName}</td>
+              <tr key={result.checkResultId || result.productId || index}>
                 <td>
-                  {formatDateTime(result.checkDate || result.checkTimestamp)}
+                  <span className="badge bg-secondary">{result.checkReference}</span>
                 </td>
+                <td className="fw-bold">{result.productName}</td>
+                <td>{formatDateTime(result.checkDate || result.checkTimestamp)}</td>
                 <td>{result.expectedQuantity}</td>
                 <td>{result.actualQuantity}</td>
-                <td className={result.hasVariance ? "variance" : ""}>
+                <td className={result.hasVariance ? "text-danger fw-bold" : "text-success"}>
                   {result.variance}
                   {result.variancePercentage &&
                     ` (${result.variancePercentage})`}
                 </td>
                 <td>
-                  <span className={`status-badge ${result.statusColor}`}>
+                  <span
+                    className={`badge ${result.statusColor === "success"
+                        ? "bg-success"
+                        : result.statusColor === "warning"
+                          ? "bg-warning text-dark"
+                          : "bg-danger"
+                      }`}
+                  >
                     {result.statusLabel}
                   </span>
                   {result.requiresAttention && (
-                    <span className="attention-badge">Cần xử lý</span>
+                    <span className="badge bg-danger ms-2">Cần xử lý</span>
                   )}
                 </td>
-                <td>{result.checkedBy}</td>
+                <td>{result.checkedBy || "N/A"}</td>
                 <td>
-                  <div className="action-buttons">
+                  <div className="d-flex justify-content-center gap-2">
                     <button
+                      className="btn btn-sm btn-info text-white"
                       onClick={() =>
                         navigate(`/hang-hoa/kiem-kho/${result.checkResultId}`)
                       }
-                      className="view-btn"
                       title="Xem chi tiết"
                     >
                       <FaEye />
                     </button>
                     {result.requiresAttention && (
                       <button
+                        className="btn btn-sm btn-warning text-dark"
                         onClick={() =>
                           handleProcessVariance(result.checkResultId)
                         }
-                        className="process-btn"
                         title="Xử lý chênh lệch"
                       >
                         <FaEdit />
@@ -469,17 +467,18 @@ const StockCheckManagement = () => {
         )}
       </tbody>
     </table>
+
   );
 
   // Render grouped summary table with expand/collapse
   const renderGroupedStockCheckTable = () => (
-    <table className="kiemkho-table">
-      <thead>
+    <table className="table table-hover mb-0 text-center">
+      <thead className="table-light">
         <tr>
           <th>Mã kiểm kho</th>
           <th>Ngày kiểm</th>
           <th>Người kiểm</th>
-          <th>Tổng sản phẩm</th>
+          <th>Tổng SP</th>
           <th>Có chênh lệch</th>
           <th>Tỷ lệ chính xác</th>
           <th>Trạng thái</th>
@@ -488,8 +487,8 @@ const StockCheckManagement = () => {
       </thead>
       <tbody>
         {stockCheckSummaries.length === 0 ? (
-          <tr key="no-data">
-            <td colSpan="8" className="no-data">
+          <tr>
+            <td colSpan="8" className="text-muted">
               {resultsLoading ? "Đang tải..." : "Không có dữ liệu"}
             </td>
           </tr>
@@ -498,116 +497,105 @@ const StockCheckManagement = () => {
             const isExpanded = expandedSummaries.has(summary.referenceId);
             return (
               <React.Fragment key={`summary-${summary.referenceId || index}`}>
-                <tr className={`status-row ${isExpanded ? "expanded" : ""}`}>
-                  <td>{summary.referenceId || "N/A"}</td>
+                <tr
+                  className={`align-middle fw-medium ${isExpanded ? "table-active" : ""
+                    }`}
+                >
+                  <td>
+                    <span className="badge bg-secondary">
+                      {summary.referenceId || "N/A"}
+                    </span>
+                  </td>
                   <td>{formatDate(summary.checkTimestamp)}</td>
                   <td>{summary.checkedBy || "N/A"}</td>
                   <td>{summary.totalItems || 0}</td>
-                  <td
-                    className={summary.itemsWithVariance > 0 ? "variance" : ""}
-                  >
+                  <td className={summary.itemsWithVariance > 0 ? "text-warning fw-bold" : ""}>
                     {summary.itemsWithVariance || 0}
                   </td>
                   <td>
                     {summary.totalItems > 0
                       ? `${Math.round(
-                          ((summary.totalItems - summary.itemsWithVariance) /
-                            summary.totalItems) *
-                            100
-                        )}%`
+                        ((summary.totalItems - summary.itemsWithVariance) /
+                          summary.totalItems) *
+                        100
+                      )}%`
                       : "100%"}
                   </td>
                   <td>
                     <span
-                      className={`status-badge ${
-                        summary.itemsWithVariance > 0 ? "warning" : "success"
-                      }`}
+                      className={`badge ${summary.itemsWithVariance > 0 ? "bg-warning text-dark" : "bg-success"
+                        }`}
                     >
-                      {summary.itemsWithVariance > 0
-                        ? "Có chênh lệch"
-                        : "Đã khớp"}
+                      {summary.itemsWithVariance > 0 ? "Có chênh lệch" : "Đã khớp"}
                     </span>
                     {summary.itemsWithVariance > 0 && (
-                      <span className="attention-badge">Cần xử lý</span>
+                      <span className="badge bg-danger ms-2">Cần xử lý</span>
                     )}
                   </td>
                   <td>
-                    <div className="action-buttons">
-                      <button
-                        onClick={() =>
-                          toggleSummaryExpansion(summary.referenceId)
-                        }
-                        className="view-btn"
-                        title={isExpanded ? "Ẩn chi tiết" : "Xem chi tiết"}
-                      >
-                        <FaEye />
-                        {isExpanded ? " Ẩn" : " Xem"}
-                      </button>
-                    </div>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => toggleSummaryExpansion(summary.referenceId)}
+                    >
+                      <FaEye /> {isExpanded ? "Ẩn" : "Xem"}
+                    </button>
                   </td>
                 </tr>
+
                 {isExpanded &&
-                  summary.items &&
-                  summary.items.map((item, itemIndex) => (
+                  summary.items?.map((item, itemIndex) => (
                     <tr
-                      key={`detail-${item.id || itemIndex}-${
-                        summary.referenceId
-                      }`}
-                      className="detail-row"
+                      key={`detail-${item.id || itemIndex}`}
+                      className="table-borderless bg-light text-start"
                     >
-                      <td colSpan="2">{item.productName || "N/A"}</td>
+                      <td colSpan={2} className="ps-4">
+                        <strong>{item.productName || "Sản phẩm không xác định"}</strong>
+                      </td>
                       <td>SL dự kiến: {item.expectedQuantity}</td>
                       <td>SL thực tế: {item.actualQuantity}</td>
-                      <td colSpan="2">
-                        Chênh lệch:
-                        <span className={item.variance !== 0 ? "variance" : ""}>
-                          {item.variance > 0
-                            ? `+${item.variance}`
-                            : item.variance}
+                      <td colSpan={2}>
+                        Chênh lệch:{" "}
+                        <span
+                          className={`fw-bold ${item.variance !== 0 ? "text-danger" : "text-success"
+                            }`}
+                        >
+                          {item.variance > 0 ? `+${item.variance}` : item.variance}
                         </span>
                       </td>
                       <td>
                         <span
-                          className={`status-badge ${
-                            item.checkStatus === "MATCH"
-                              ? "success"
-                              : item.checkStatus === "OVERAGE"
-                              ? "warning"
-                              : "error"
-                          }`}
+                          className={`badge ${item.checkStatus === "MATCH"
+                            ? "bg-success"
+                            : item.checkStatus === "OVERAGE"
+                              ? "bg-warning text-dark"
+                              : "bg-danger"
+                            }`}
                         >
                           {item.checkStatus === "MATCH"
                             ? "Khớp"
                             : item.checkStatus === "OVERAGE"
-                            ? "Thừa"
-                            : "Thiếu"}
+                              ? "Thừa"
+                              : "Thiếu"}
                         </span>
                       </td>
                       <td>
-                        <div className="action-buttons">
-                          {item.checkStatus === "SHORTAGE" ||
-                          item.checkStatus === "OVERAGE" ? (
-                            <button
-                              onClick={() => handleOpenAdjustmentModal(item)}
-                              className="adjust-btn"
-                              title="Điều chỉnh tồn kho"
-                            >
-                              <FaEye />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/hang-hoa/kiem-kho/chi-tiet/${item.id}`
-                                )
-                              }
-                              className="view-btn"
-                              title="Xem chi tiết"
-                            >
-                              <FaEye />
-                            </button>
-                          )}
-                        </div>
+                        {["OVERAGE", "SHORTAGE"].includes(item.checkStatus) ? (
+                          <button
+                            className="btn btn-sm btn-warning text-dark"
+                            onClick={() => handleOpenAdjustmentModal(item)}
+                          >
+                            Điều chỉnh
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-sm btn-info text-white"
+                            onClick={() =>
+                              navigate(`/hang-hoa/kiem-kho/chi-tiet/${item.id}`)
+                            }
+                          >
+                            <FaEye /> Chi tiết
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -617,6 +605,7 @@ const StockCheckManagement = () => {
         )}
       </tbody>
     </table>
+
   );
 
   const renderPagination = () => {
@@ -681,11 +670,10 @@ const StockCheckManagement = () => {
               <p>
                 <strong>Trạng thái:</strong>
                 <span
-                  className={`status-badge ${
-                    adjustmentItem.checkStatus === "OVERAGE"
-                      ? "warning"
-                      : "error"
-                  }`}
+                  className={`status-badge ${adjustmentItem.checkStatus === "OVERAGE"
+                    ? "warning"
+                    : "error"
+                    }`}
                 >
                   {adjustmentItem.checkStatus === "OVERAGE" ? "Thừa" : "Thiếu"}
                 </span>

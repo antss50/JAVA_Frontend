@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "./transaction.css";
 import { useStockLedger } from "../../hooks/useStockLedger";
 import { useExportDestroy } from "../../hooks/useExportDestroy";
-import { useProductWithStock } from "../../hooks/useProductWithStock";
 import DisposalForm from "../../components/DisposalForm";
 import ToastMessage from "../../component/ToastMessage";
+import "./DisposalDetailsModal.css"
 import {
   DISPOSAL_REASONS,
   DISPOSAL_METHODS,
@@ -370,14 +370,14 @@ const CancelProduct = () => {
           <input
             type="text"
             placeholder="Nhập mã xuất hủy"
-            className="xuathuy-input"
+            className="xuathuy-input bg-light"
             value={searchFilters.documentReference}
             onChange={(e) =>
               handleSearchChange("documentReference", e.target.value)
             }
           />
           <select
-            className="xuathuy-input"
+            className="xuathuy-input bg-light text-dark"
             value={searchFilters.disposalType}
             onChange={(e) => handleSearchChange("disposalType", e.target.value)}
           >
@@ -390,14 +390,14 @@ const CancelProduct = () => {
         <div className="search-row">
           <input
             type="date"
-            className="xuathuy-input"
+            className="xuathuy-input bg-light text-dark"
             placeholder="Từ ngày"
             value={searchFilters.startDate}
             onChange={(e) => handleSearchChange("startDate", e.target.value)}
           />
           <input
             type="date"
-            className="xuathuy-input"
+            className="xuathuy-input bg-light text-dark"
             placeholder="Đến ngày"
             value={searchFilters.endDate}
             onChange={(e) => handleSearchChange("endDate", e.target.value)}
@@ -406,7 +406,7 @@ const CancelProduct = () => {
 
         <div className="search-row">
           <select
-            className="xuathuy-input"
+            className="xuathuy-input bg-light text-dark"
             value={searchFilters.reason}
             onChange={(e) => handleSearchChange("reason", e.target.value)}
           >
@@ -418,7 +418,7 @@ const CancelProduct = () => {
             ))}
           </select>
           <select
-            className="xuathuy-input"
+            className="xuathuy-input bg-light text-dark"
             value={searchFilters.method}
             onChange={(e) => handleSearchChange("method", e.target.value)}
           >
@@ -486,8 +486,8 @@ const CancelProduct = () => {
         {/* Disposal Table */}
         {!loading && (
           <div className="table-container">
-            <table className="xuathuy-table">
-              <thead>
+            <table className="table table-hover mb-0">
+              <thead className="table-danger text-center">
                 <tr>
                   <th>Mã xuất hủy</th>
                   <th>Thời gian</th>
@@ -500,10 +500,10 @@ const CancelProduct = () => {
                   <th>Thao tác</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-center align-middle">
                 {groupedDisposals.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="no-data">
+                    <td colSpan="9" className="text-muted py-3">
                       {filteredMovements.length === 0
                         ? "Không có dữ liệu xuất hủy"
                         : "Không tìm thấy kết quả phù hợp"}
@@ -514,53 +514,48 @@ const CancelProduct = () => {
                     const status = getDisposalStatus(disposal);
                     return (
                       <tr key={disposal.id}>
-                        <td>{disposal.documentReference}</td>
+                        <td>
+                          <span className="badge bg-secondary">{disposal.documentReference}</span>
+                        </td>
                         <td>{formatDateTime(disposal.eventTimestamp)}</td>
                         <td>
                           <span
-                            className={
-                              disposal.isCustomerReturn
-                                ? "disposal-type-customer"
-                                : "disposal-type-manual"
-                            }
+                            className={`badge ${disposal.isCustomerReturn
+                              ? "bg-info"
+                              : "bg-warning text-dark"
+                              }`}
                           >
-                            {disposal.isCustomerReturn
-                              ? "Hoàn trả KH"
-                              : "Thủ công"}
+                            {disposal.isCustomerReturn ? "Hoàn trả KH" : "Thủ công"}
                           </span>
                         </td>
                         <td>{disposal.warehouseName}</td>
-                        <td>
+                        <td className="text-start">
                           {viewMode === "summary" ? (
                             <span>{disposal.totalQuantity}</span>
                           ) : (
-                            <div className="items-detail">
+                            <ul className="list-unstyled mb-0">
                               {disposal.items.map((item, idx) => (
-                                <div key={idx} className="item-line">
-                                  {item.productName}: {item.quantity}{" "}
+                                <li key={idx}>
+                                  <strong>{item.productName}</strong>: {item.quantity}{" "}
                                   {item.productUnit}
-                                </div>
+                                </li>
                               ))}
-                            </div>
+                            </ul>
                           )}
                         </td>
+                        <td>{getDisposalReasonText(disposal.disposalReason)}</td>
+                        <td>{getDisposalMethodText(disposal.disposalMethod)}</td>
                         <td>
-                          {getDisposalReasonText(disposal.disposalReason)}
-                        </td>
-                        <td>
-                          {getDisposalMethodText(disposal.disposalMethod)}
-                        </td>
-                        <td>
-                          <span className={status.className}>
+                          <span className={`badge ${status.className}`}>
                             {status.text}
                           </span>
                         </td>
                         <td>
                           <button
-                            className="view-details-btn"
+                            className="btn btn-sm btn-primary"
                             onClick={() => handleViewDetails(disposal)}
                           >
-                            👁️ Xem
+                            Xem
                           </button>
                         </td>
                       </tr>
@@ -569,6 +564,7 @@ const CancelProduct = () => {
                 )}
               </tbody>
             </table>
+
           </div>
         )}
       </div>
@@ -608,65 +604,62 @@ const DisposalDetailsModal = ({ disposal, onClose }) => {
       <div
         className="modal-content disposal-details-modal"
         onClick={(e) => e.stopPropagation()}
+        style={{backgroundColor: '#fff'}}
       >
+        {/* Header */}
         <div className="modal-header">
           <h3>Chi tiết phiếu xuất hủy</h3>
-          <button className="close-btn" onClick={onClose}>
-            ✕
-          </button>
+          <button className="btn-close" onClick={onClose}>✕</button>
         </div>
 
+        {/* Body */}
         <div className="modal-body">
+          {/* Thông tin chung */}
           <div className="detail-section">
             <h4>Thông tin chung</h4>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <label>Mã phiếu:</label>
-                <span>{disposal.documentReference}</span>
+            <div className="row">
+              <div className="col-md-6 mb-2">
+                <strong>Mã phiếu:</strong> {disposal.documentReference}
               </div>
-              <div className="detail-item">
-                <label>Thời gian:</label>
-                <span>
-                  {new Date(disposal.eventTimestamp).toLocaleString("vi-VN")}
-                </span>
+              <div className="col-md-6 mb-2">
+                <strong>Thời gian:</strong>{" "}
+                {new Date(disposal.eventTimestamp).toLocaleString("vi-VN")}
               </div>
-              <div className="detail-item">
-                <label>Kho:</label>
-                <span>{disposal.warehouseName}</span>
+              <div className="col-md-6 mb-2">
+                <strong>Kho:</strong> {disposal.warehouseName}
               </div>
-              <div className="detail-item">
-                <label>Loại:</label>
-                <span>
-                  {disposal.isCustomerReturn
-                    ? "Hoàn trả khách hàng"
-                    : "Xuất hủy thủ công"}
-                </span>
+              <div className="col-md-6 mb-2">
+                <strong>Loại:</strong>{" "}
+                {disposal.isCustomerReturn
+                  ? "Hoàn trả khách hàng"
+                  : "Xuất hủy thủ công"}
               </div>
-              <div className="detail-item">
-                <label>Lý do:</label>
-                <span>{getDisposalReasonText(disposal.disposalReason)}</span>
+              <div className="col-md-6 mb-2">
+                <strong>Lý do:</strong>{" "}
+                {getDisposalReasonText(disposal.disposalReason)}
               </div>
-              <div className="detail-item">
-                <label>Phương thức:</label>
-                <span>{getDisposalMethodText(disposal.disposalMethod)}</span>
+              <div className="col-md-6 mb-2">
+                <strong>Phương thức:</strong>{" "}
+                {getDisposalMethodText(disposal.disposalMethod)}
               </div>
             </div>
           </div>
 
-          <div className="detail-section">
+          {/* Danh sách sản phẩm */}
+          <div className="detail-section mt-4">
             <h4>Danh sách sản phẩm</h4>
-            <table className="detail-table">
-              <thead>
+            <table className="table table-hover mt-2">
+              <thead className="table-light text-center">
                 <tr>
                   <th>Sản phẩm</th>
                   <th>Số lượng</th>
                   <th>Đơn vị</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-center">
                 {disposal.items.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.productName}</td>
+                    <td className="fw-bold">{item.productName}</td>
                     <td>{item.quantity}</td>
                     <td>{item.productUnit}</td>
                   </tr>
@@ -674,23 +667,19 @@ const DisposalDetailsModal = ({ disposal, onClose }) => {
               </tbody>
             </table>
           </div>
-
-          {disposal.notes && (
-            <div className="detail-section">
-              <h4>Ghi chú</h4>
-              <p className="notes-content">{disposal.notes}</p>
-            </div>
-          )}
         </div>
 
-        <div className="modal-footer">
-          <button className="close-modal-btn" onClick={onClose}>
+        {/* Footer */}
+        <div className="modal-footer text-end">
+          <button className="btn btn-secondary" onClick={onClose}>
             Đóng
           </button>
         </div>
       </div>
     </div>
+
   );
+
 };
 
 export default CancelProduct;

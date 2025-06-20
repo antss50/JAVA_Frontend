@@ -57,7 +57,7 @@ const Customer = () => {
                     </div>
 
                     <table className="table table-hover mb-0">
-                        <thead className="table-light text-center">
+                        <thead className="table-primary text-center">
                             <tr>
                                 <th>Mã KH</th>
                                 <th>Tên khách hàng</th>

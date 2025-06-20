@@ -31,9 +31,9 @@ const ReturnList = () => {
     return (
         <div className="full-container mt-4">
             <div className="p-5">
-                <h3 className="mb-5">PHIẾU TRẢ HÀNG</h3>
+                <h3 className="mb-5 fw-bold fs-4">PHIẾU TRẢ HÀNG</h3>
                 <table className="table table-hover mb-0">
-                    <thead className="table-primary text-center">
+                    <thead className="table-danger text-center">
                         <tr>
                             <th>Mã phiếu</th>
                             <th>Tên sản phẩm</th>

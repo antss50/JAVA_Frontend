@@ -1,12 +1,53 @@
 /**
  * Return Import Products Form Component
  * Handles post-receipt returning of goods to suppliers based on bills (like goods receipt)
+ *
+ * Features:
+ * - Bill selection and search
+ * - Product return quantity and reason specification
+ * - Form validation and submission
+ * - Auto-refresh after successful submission to fetch updated data
  */
 
 import { useState, useEffect, useCallback } from "react";
 import { useImportGoodsReturned } from "../hooks/useImportGoodsReturned.js";
 
 const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
+  // Auto-refresh function to reload bill data after successful submission
+  const refreshBillData = useCallback(async () => {
+    setIsRefreshing(true);
+    setShowSuccessMessage(true);
+    try {
+      console.log("Auto-refreshing bill data after successful submission...");
+
+      // Reset pagination to first page to see latest changes
+      setBillPagination((prev) => ({
+        ...prev,
+        page: 0,
+      }));
+
+      // Reload bill list based on current search state
+      if (billSearchTerm.trim()) {
+        await handleBillSearch(billSearchTerm);
+      } else {
+        await loadReturnableBills();
+      }
+
+      console.log("Bill data refreshed successfully");
+
+      // Hide success message after a delay
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to refresh bill data:", error);
+      setShowSuccessMessage(false);
+      // Don't show error to user as this is background refresh
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [billSearchTerm, loadReturnableBills, handleBillSearch]);
+
   const {
     recordGoodsReturn,
     loading: goodsReturnLoading,
@@ -15,9 +56,19 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     getReturnableBills,
     getBillForReturn,
   } = useImportGoodsReturned({
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
+      console.log("Return submission successful, triggering auto-refresh...");
+
+      // Call parent success handler
       onSuccess && onSuccess(response);
+
+      // Reset form state
       resetForm();
+
+      // Auto-refresh bill data to reflect updated quantities
+      await refreshBillData();
+
+      // Close the form after refresh
       onClose();
     },
     onError: (error) => {
@@ -36,12 +87,13 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     returnDate: new Date().toISOString().split("T")[0],
     lines: [],
   });
-
   // UI state
   const [selectedBill, setSelectedBill] = useState(null);
   const [errors, setErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState([]);
   const [billSearchTerm, setBillSearchTerm] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Success message state
 
   // Bill search state
   const [searchResults, setSearchResults] = useState([]);
@@ -205,7 +257,6 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     },
     [getBillForReturn]
   );
-
   /**
    * Reset form to initial state
    */
@@ -225,6 +276,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     setSearchResults([]);
     setErrors({});
     setValidationErrors([]);
+    setIsRefreshing(false); // Reset refresh state
+    setShowSuccessMessage(false); // Reset success message
   }, []);
   /**
    * Validate form before submission
@@ -399,8 +452,25 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
           <h2 style={{ margin: 0, color: "#333" }}>Tạo Phiếu Trả Hàng Nhập</h2>
           <p style={{ margin: "8px 0 0 0", color: "#666" }}>
             Trả hàng đã nhập về cho nhà cung cấp
-          </p>
+          </p>{" "}
         </div>
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div
+            style={{
+              backgroundColor: "#d4edda",
+              border: "1px solid #c3e6cb",
+              borderRadius: "4px",
+              padding: "12px",
+              marginBottom: "16px",
+              color: "#155724",
+            }}
+          >
+            <p style={{ margin: 0 }}>
+              ✓ Phiếu trả hàng đã được tạo thành công! Đang làm mới dữ liệu...
+            </p>
+          </div>
+        )}
         {/* Validation Errors */}
         {validationErrors.length > 0 && (
           <div
@@ -467,38 +537,45 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                   fontSize: "14px",
                 }}
                 className="bg-light"
-              />
+              />{" "}
               <button
                 onClick={() => handleBillSearch()}
-                disabled={isSearching}
+                disabled={isSearching || isRefreshing}
                 style={{
                   padding: "8px 16px",
                   backgroundColor: "#007bff",
                   color: "white",
                   border: "none",
                   borderRadius: "4px",
-                  cursor: isSearching ? "not-allowed" : "pointer",
+                  cursor:
+                    isSearching || isRefreshing ? "not-allowed" : "pointer",
                   fontSize: "14px",
                 }}
               >
-                {isSearching ? "Đang tìm..." : "Tìm kiếm"}
-              </button>
+                {isSearching
+                  ? "Đang tìm..."
+                  : isRefreshing
+                  ? "Làm mới..."
+                  : "Tìm kiếm"}
+              </button>{" "}
               <button
                 onClick={() => {
                   setBillSearchTerm("");
                   loadReturnableBills();
                 }}
+                disabled={isSearching || isRefreshing}
                 style={{
                   padding: "8px 16px",
                   backgroundColor: "#6c757d",
                   color: "white",
                   border: "none",
                   borderRadius: "4px",
-                  cursor: "pointer",
+                  cursor:
+                    isSearching || isRefreshing ? "not-allowed" : "pointer",
                   fontSize: "14px",
                 }}
               >
-                Làm mới
+                {isRefreshing ? "Đang làm mới..." : "Làm mới"}
               </button>
             </div>
 
@@ -511,9 +588,14 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                 overflow: "auto",
               }}
             >
-              {isSearching ? (
+              {" "}
+              {isSearching || isRefreshing ? (
                 <div style={{ padding: "20px", textAlign: "center" }}>
-                  <p>Đang tải danh sách phiếu nhập...</p>
+                  <p>
+                    {isRefreshing
+                      ? "Đang làm mới danh sách phiếu nhập..."
+                      : "Đang tải danh sách phiếu nhập..."}
+                  </p>
                 </div>
               ) : searchResults.length === 0 ? (
                 <div style={{ padding: "20px", textAlign: "center" }}>
@@ -1073,11 +1155,14 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
         >
           <div>
             {loading && <span style={{ color: "#666" }}>Đang xử lý...</span>}
+            {isRefreshing && (
+              <span style={{ color: "#17a2b8" }}>Đang làm mới dữ liệu...</span>
+            )}
           </div>
           <div style={{ display: "flex", gap: "12px" }}>
             <button
               onClick={handleClose}
-              disabled={loading}
+              disabled={loading || isRefreshing}
               style={{
                 padding: "8px 16px",
                 backgroundColor: "#6c757d",
@@ -1093,6 +1178,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
               onClick={handleSubmit}
               disabled={
                 loading ||
+                isRefreshing ||
                 !selectedBill ||
                 !formData.lines.some((line) => line.quantityToReturn > 0)
               }
@@ -1113,7 +1199,11 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                     : "pointer",
               }}
             >
-              {loading ? "Đang tạo..." : "Tạo phiếu trả hàng"}
+              {loading
+                ? "Đang tạo..."
+                : isRefreshing
+                ? "Làm mới dữ liệu..."
+                : "Tạo phiếu trả hàng"}
             </button>
           </div>
         </div>

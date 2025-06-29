@@ -534,7 +534,7 @@ const BillForm = () => {
             <th>Sản phẩm</th>
             <th>Mô tả</th>
             <th>Số lượng</th>
-            <th>Đơn giá (VNĐ)</th>
+            <th>Đơn giá</th>
             <th>Thành tiền</th>
             <th>Thao tác</th>
           </tr>
@@ -604,7 +604,7 @@ const BillForm = () => {
               </td>
 
               <td className="fw-bold text-success text-end">
-                ${calculateLineTotal(line.quantity, line.unitPrice).toFixed(2)}
+                {calculateLineTotal(line.quantity, line.unitPrice).toLocaleString()} ₫
               </td>
 
               <td className="text-center">
@@ -629,7 +629,7 @@ const BillForm = () => {
               Tổng cộng:
             </td>
             <td className="fs-5 text-success text-end">
-              ${calculateBillTotal().toFixed(2)}
+              {calculateBillTotal().toLocaleString()} ₫
             </td>
             <td></td>
           </tr>

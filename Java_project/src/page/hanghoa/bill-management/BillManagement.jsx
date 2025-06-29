@@ -45,7 +45,7 @@ const BillManagement = () => {
     changeSort,
     refreshAll,
     clearError,
-  } = useBillManagement({ autoLoad: false });
+  } = useBillManagement({ autoLoad: true });
 
   // Local state
   const [searchText, setSearchText] = useState("");
@@ -250,7 +250,7 @@ const BillManagement = () => {
             color: "#28a745",
           }}
         >
-          {pagination.totalElements || 0}
+          {pagination.totalElements || bills.length || 0}
         </p>
       </div>
     </div>
@@ -384,11 +384,11 @@ const BillManagement = () => {
   const renderTableHeader = () => (
     <div className="kiemkho-header">
       <h2 className="kiemkho-title">LỊCH SỬ NHẬP HÀNG</h2>
-      <div className="header-actions" style={{ display: "flex", gap: "12px"}}>
+      <div className="header-actions" style={{ display: "flex", gap: "12px" }}>
         <button
           className="kiemkho-button"
           onClick={() => navigate("/hang-hoa/bill-management/purchase-order")}
-          style={{ backgroundColor: "#28a745"}}
+          style={{ backgroundColor: "#28a745" }}
         >
           <FaShoppingCart /> Tạo đơn hàng
         </button>
@@ -455,9 +455,9 @@ const BillManagement = () => {
               <td className={bill.isOverdue ? "text-danger fw-bold" : ""}>
                 {new Date(bill.dueDate).toLocaleDateString("vi-VN")}
               </td>
-              <td>{bill.totalAmount?.toLocaleString()} VNĐ</td>
-              <td>{bill.amountPaid?.toLocaleString()} VNĐ</td>
-              <td className="fw-bold text-danger">{bill.outstandingAmount?.toLocaleString()} VNĐ</td>
+              <td>{bill.totalAmount?.toLocaleString()} </td>
+              <td>{bill.amountPaid?.toLocaleString()} </td>
+              <td className="fw-bold text-danger">{bill.outstandingAmount?.toLocaleString()}</td>
               <td>
                 <span className={`badge ${bill.statusBadge?.class}`} style={{
                   backgroundColor: bill.statusBadge?.color || "#888",

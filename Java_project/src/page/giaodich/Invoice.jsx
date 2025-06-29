@@ -151,9 +151,9 @@ const Invoice = () => {
                                                         </td>
                                                         <td className="fw-bold">{item.productName}</td>
                                                         <td>{item.quantity}</td>
-                                                        <td>{item.unitPrice?.toLocaleString()} VNĐ</td>
+                                                        <td>{item.unitPrice?.toLocaleString()}</td>
                                                         <td className="fw-bold text-danger">
-                                                            {item.lineTotal?.toLocaleString()} VNĐ
+                                                            {item.lineTotal?.toLocaleString()}
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -206,7 +206,7 @@ const Invoice = () => {
                                     <td className="fw-bold">{invoice.customerName}</td>
                                     <td>{invoice.orderId}</td>
                                     <td className="fw-bold text-danger">
-                                        {invoice.totalAmount?.toLocaleString()} VNĐ
+                                        {invoice.totalAmount?.toLocaleString()} ₫
                                     </td>
                                     <td>{new Date(invoice.invoiceDate).toLocaleString()}</td>
                                 </tr>

@@ -338,8 +338,8 @@ const ProductList = () => {
                                             </span>
                                         </td>
                                         <td>{product.unit || "cái"}</td>
-                                        <td>{product.purchasePrice?.toLocaleString()} VNĐ</td>
-                                        <td>{product.sellingPrice?.toLocaleString()} VNĐ</td>
+                                        <td>{product.purchasePrice?.toLocaleString()} ₫</td>
+                                        <td>{product.sellingPrice?.toLocaleString()} ₫</td>
                                         <td>
                                             <button
                                                 className="btn btn-warning fw-bold"

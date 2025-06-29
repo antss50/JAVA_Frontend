@@ -307,8 +307,8 @@ const CategoryList = () => {
                                                     </td>
                                                     <td className="fw-bold">{product.name}</td>
                                                     <td>{product.unit || "cái"}</td>
-                                                    <td>{product.purchasePrice?.toLocaleString()} VNĐ</td>
-                                                    <td>{product.sellingPrice?.toLocaleString()} VNĐ</td>
+                                                    <td>{product.purchasePrice?.toLocaleString()} ₫</td>
+                                                    <td>{product.sellingPrice?.toLocaleString()} ₫</td>
                                                 </tr>
                                             ))}
                                         </tbody>

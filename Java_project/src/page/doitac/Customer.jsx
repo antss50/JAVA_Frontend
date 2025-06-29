@@ -13,7 +13,7 @@ const Customer = () => {
         const fetchData = async () => {
             try {
                 // Fetch danh sách khách hàng
-                const customerRes = await fetch(`http://localhost:8080/api/parties?partyType=CUSTOMER?page=${currentPage}&size=${size}`, {
+                const customerRes = await fetch(`http://localhost:8080/api/parties?partyType=CUSTOMER`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -21,7 +21,6 @@ const Customer = () => {
                 });
                 const customerList = await customerRes.json();
                 setCustomers(Array.isArray(customerList) ? customerList : []);
-                setTotalPages(result.totalPages || 1);
                 // Fetch hóa đơn
                 const invoiceRes = await fetch(`http://localhost:8080/api/ar/invoices`, {
                     headers: {
@@ -74,7 +73,7 @@ const Customer = () => {
                                     <td className="fw-bold">{customer.name}</td>
                                     <td>{customer.phone}</td>
                                     <td className="fw-bold text-success">
-                                        {(totalsMap[customer.id] || 0).toLocaleString()} VNĐ
+                                        {(totalsMap[customer.id] || 0).toLocaleString()} ₫
                                     </td>
                                 </tr>
                             ))}

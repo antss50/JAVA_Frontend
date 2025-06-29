@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import useProductReports from "../baocao/hooks/useProductReport";
+import useProductReports from "../../hooks/useProductReport";
 import './ProductReport.css';
 
 const ProductReport = () => {
@@ -365,7 +365,7 @@ const ProductReport = () => {
                         <div className="item fs-5">
                           <label>Tổng doanh thu:</label>
                           <span className="value fw-bold ms-2">
-                            {summary.totalSales?.toLocaleString() || "N/A"} VNĐ
+                            {summary.totalSales?.toLocaleString() || "N/A"}
                           </span>
                         </div>
                         <div className="item fs-5">
@@ -412,9 +412,9 @@ const ProductReport = () => {
                                 </td>
                                 <td>{product.quantitySold?.toLocaleString() || 0}</td>
                                 <td className="fw-bold text-success">
-                                  {product.totalRevenue?.toLocaleString()} VNĐ
+                                  {product.totalRevenue?.toLocaleString()} 
                                 </td>
-                                <td>{product.averagePrice?.toLocaleString()} VNĐ</td>
+                                <td>{product.averagePrice?.toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>

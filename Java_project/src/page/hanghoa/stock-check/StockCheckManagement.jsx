@@ -356,10 +356,10 @@ const StockCheckManagement = () => {
             <h4>Có chênh lệch</h4>
             <p className="stat-number error">{summary.checksWithVariance}</p>
           </div>
-          <div className="stat-card">
+          {/* <div className="stat-card">
             <h4>Tỷ lệ chính xác</h4>
             <p className="stat-number success">{summary.accuracyRate}</p>
-          </div>
+          </div> */}
           <div className="stat-card">
             <h4>Chờ xử lý</h4>
             <p className="stat-number warning">{unprocessedCount}</p>
@@ -480,7 +480,6 @@ const StockCheckManagement = () => {
           <th>Người kiểm</th>
           <th>Tổng SP</th>
           <th>Có chênh lệch</th>
-          <th>Tỷ lệ chính xác</th>
           <th>Trạng thái</th>
           <th>Thao tác</th>
         </tr>
@@ -511,15 +510,6 @@ const StockCheckManagement = () => {
                   <td>{summary.totalItems || 0}</td>
                   <td className={summary.itemsWithVariance > 0 ? "text-warning fw-bold" : ""}>
                     {summary.itemsWithVariance || 0}
-                  </td>
-                  <td>
-                    {summary.totalItems > 0
-                      ? `${Math.round(
-                        ((summary.totalItems - summary.itemsWithVariance) /
-                          summary.totalItems) *
-                        100
-                      )}%`
-                      : "100%"}
                   </td>
                   <td>
                     <span
@@ -577,25 +567,6 @@ const StockCheckManagement = () => {
                               ? "Thừa"
                               : "Thiếu"}
                         </span>
-                      </td>
-                      <td>
-                        {["OVERAGE", "SHORTAGE"].includes(item.checkStatus) ? (
-                          <button
-                            className="btn btn-sm btn-warning text-dark"
-                            onClick={() => handleOpenAdjustmentModal(item)}
-                          >
-                            Điều chỉnh
-                          </button>
-                        ) : (
-                          <button
-                            className="btn btn-sm btn-info text-white"
-                            onClick={() =>
-                              navigate(`/hang-hoa/kiem-kho/chi-tiet/${item.id}`)
-                            }
-                          >
-                            <FaEye /> Chi tiết
-                          </button>
-                        )}
                       </td>
                     </tr>
                   ))}

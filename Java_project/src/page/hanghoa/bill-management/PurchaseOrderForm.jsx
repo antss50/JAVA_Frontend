@@ -395,7 +395,7 @@ const PurchaseOrderForm = () => {
             <th>Tên sản phẩm</th>
             <th>Tồn kho hiện tại</th>
             <th>Số lượng đặt hàng</th>
-            <th>Đơn giá (VNĐ)</th>
+            <th>Đơn giá</th>
             <th>Thành tiền</th>
             <th>Mô tả</th>
             <th>Thao tác</th>
@@ -460,7 +460,7 @@ const PurchaseOrderForm = () => {
                 </td>
 
                 <td className="fw-bold text-success text-end">
-                  ${(product.quantity * product.unitPrice).toFixed(2)}
+                  {(product.quantity * product.unitPrice).toLocaleString()} ₫ 
                 </td>
 
                 <td>
@@ -589,7 +589,7 @@ const PurchaseOrderForm = () => {
           />
         </label>{" "}
         <label>
-          Tổng giá trị (VNĐ)
+          Tổng giá trị
           <input
             type="text"
             value={`${totalAmount.toLocaleString("vi-VN")} ₫`}

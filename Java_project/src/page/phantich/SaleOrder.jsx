@@ -194,7 +194,7 @@ const SaleOrder = () => {
                                             </span>
                                         </td>
                                         <td>{product.unit || "cái"}</td>
-                                        <td>{product.sellingPrice?.toLocaleString()} VNĐ</td>
+                                        <td>{product.sellingPrice?.toLocaleString()} ₫</td>
                                         <td>
                                             <input
                                                 type="checkbox"
@@ -256,7 +256,7 @@ const SaleOrder = () => {
                                     onChange={(e) => handleQuantityChange(item.productId, parseFloat(e.target.value))}
                                     className="form-control"
                                 />
-                                <span>{item.lineTotal.toLocaleString()}đ</span>
+                                <span>{item.lineTotal.toLocaleString()} ₫</span>
                             </div>
                         ))}
 

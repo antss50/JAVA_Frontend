@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import "../App.css";
-import useProductReports from "./baocao/hooks/useProductReport";
+import useProductReports from "../hooks/useProductReport";
 
 const Home = () => {
   const [doanhThu, setDoanhThu] = useState(0);
@@ -86,7 +86,7 @@ const Home = () => {
             </div>
             <div className="item">
               <p>Doanh thu</p>
-              <h3>{doanhThu.toLocaleString("vi-VN")}₫</h3>
+              <h3>{doanhThu.toLocaleString("vi-VN")}</h3>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ const Home = () => {
             <h2>DOANH SỐ HÔM NAY</h2>
             <div className="tong-doanh-thu-inline">
               Tổng doanh thu:{" "}
-              <strong>{doanhThu.toLocaleString("vi-VN")}₫</strong>
+              <strong>{doanhThu.toLocaleString("vi-VN")}</strong>
             </div>
           </div>
 
@@ -111,7 +111,7 @@ const Home = () => {
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
               />
               <Tooltip
-                formatter={(value) => `${value.toLocaleString("vi-VN")}₫`}
+                formatter={(value) => `${value.toLocaleString("vi-VN")}`}
               />
               <Bar dataKey="salesAmount" fill="#007bff" radius={[4, 4, 0, 0]} />
             </BarChart>

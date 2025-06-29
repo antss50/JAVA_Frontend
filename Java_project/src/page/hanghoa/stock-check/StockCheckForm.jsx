@@ -231,7 +231,7 @@ const StockCheckForm = () => {
                   <td>{product.category?.name || "N/A"}</td>
                   <td>{product.currentStock || 0}</td>
                   <td>{product.unit}</td>
-                  <td>{product.sellingPrice?.toLocaleString() || "N/A"}</td>
+                  <td>{product.sellingPrice?.toLocaleString() || "N/A"} ₫</td>
                   <td>
                     <button
                       onClick={() => handleAddProduct(product)}
@@ -293,7 +293,7 @@ const StockCheckForm = () => {
                     value={product.expectedQuantity || ""}
                     onChange={(e) => handleExpectedQuantityChange(product.id, e.target.value)}
                     min="0"
-                    step="0.01"
+                    step="1"
                     className="form-control form-control-sm text-end"
                     style={{ maxWidth: "100px", margin: "0 auto" }}
                   />
@@ -366,7 +366,7 @@ const StockCheckForm = () => {
             type="number"
             value={totalExpectedQuantity}
             readOnly
-            className="readonly-input"
+            className="text-dark bg-white"
           />
         </label>
 

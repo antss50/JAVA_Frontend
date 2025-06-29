@@ -57,13 +57,13 @@ export const DISPOSAL_METHODS = {
  */
 export const getDisposalReasonText = (reason) => {
   const reasonTexts = {
-    [DISPOSAL_REASONS.EXPIRED]: "Product has expired",
-    [DISPOSAL_REASONS.DAMAGED]: "Product is damaged/defective",
-    [DISPOSAL_REASONS.CONTAMINATED]: "Product is contaminated",
-    [DISPOSAL_REASONS.RECALLED]: "Product recall",
-    [DISPOSAL_REASONS.OBSOLETE]: "Product is obsolete",
-    [DISPOSAL_REASONS.QUALITY_ISSUE]: "Quality does not meet standards",
-    [DISPOSAL_REASONS.OTHER]: "Other reason",
+    [DISPOSAL_REASONS.EXPIRED]: "Sản phẩm hết hạn",
+    [DISPOSAL_REASONS.DAMAGED]: "Sản phẩm lỗi/hỏng",
+    [DISPOSAL_REASONS.CONTAMINATED]: "Sản phẩm bị bẩn",
+    [DISPOSAL_REASONS.RECALLED]: "Thu hồi sản phẩm",
+    [DISPOSAL_REASONS.OBSOLETE]: "Sản phẩm lỗi thời",
+    [DISPOSAL_REASONS.QUALITY_ISSUE]: "Chất lượng không đạt tiêu chuẩn",
+    [DISPOSAL_REASONS.OTHER]: "Lý do khác",
   };
   return reasonTexts[reason] || reason;
 };
@@ -75,12 +75,12 @@ export const getDisposalReasonText = (reason) => {
  */
 export const getDisposalMethodText = (method) => {
   const methodTexts = {
-    [DISPOSAL_METHODS.DESTRUCTION]: "Destroyed/Incinerated",
-    [DISPOSAL_METHODS.RECYCLING]: "Recycled",
-    [DISPOSAL_METHODS.DONATION]: "Donated",
-    [DISPOSAL_METHODS.RETURN_TO_VENDOR]: "Returned to vendor",
-    [DISPOSAL_METHODS.COMPOST]: "Composted",
-    [DISPOSAL_METHODS.OTHER]: "Other method",
+    [DISPOSAL_METHODS.DESTRUCTION]: "Tiêu huỷ",
+    [DISPOSAL_METHODS.RECYCLING]: "Tái chế",
+    [DISPOSAL_METHODS.DONATION]: "Quyên góp",
+    [DISPOSAL_METHODS.RETURN_TO_VENDOR]: "Trả về nhà sản xuất",
+    [DISPOSAL_METHODS.COMPOST]: "Làm phân bón",
+    [DISPOSAL_METHODS.OTHER]: "Cách xử lý khác",
   };
   return methodTexts[method] || method;
 };

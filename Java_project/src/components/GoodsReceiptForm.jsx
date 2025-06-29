@@ -662,6 +662,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
               </label>
               <input
                 type="text"
+                className='text-dark bg-light'
                 value={formData.referenceNumber}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -676,7 +677,6 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 placeholder="Nhập số tham chiếu..."
-                className="bg-light"
               />
             </div>
             {/* Received By */}
@@ -706,7 +706,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 placeholder="Nhập tên người nhận..."
-                className="bg-light"
+                className="bg-light text-dark"
               />
             </div>
             {/* Notes */}
@@ -733,7 +733,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                   borderRadius: "4px",
                 }}
                 placeholder="Nhập ghi chú..."
-                className="bg-light"
+                className="bg-light text-dark"
               />
             </div>
           </div>
@@ -878,6 +878,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                               borderRadius: "4px",
                               textAlign: "center",
                             }}
+                            className="bg-light text-dark"
                           />
                         </td>
                         <td
@@ -905,6 +906,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                               borderRadius: "4px",
                               textAlign: "center",
                             }}
+                            className="bg-light text-dark"
                           />
                         </td>
                         <td
@@ -929,6 +931,7 @@ const GoodsReceiptForm = ({ isOpen, onClose, onSuccess }) => {
                               border: "1px solid #ced4da",
                               borderRadius: "4px",
                             }}
+                            className="bg-light text-dark"
                             placeholder="Nhập lý do từ chối..."
                             disabled={parseFloat(line.quantityRejected) === 0}
                           />

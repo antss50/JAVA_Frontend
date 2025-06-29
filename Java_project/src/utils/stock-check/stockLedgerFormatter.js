@@ -132,6 +132,21 @@ export const formatStockDisposalRequest = (disposalData) => {
  * @returns {Object} Formatted movement data
  */
 export const formatStockMovement = (movement) => {
+  // Format notes to extract PO, Line, and any trailing notes
+  let formattedNotes = movement.notes || "";
+  if (formattedNotes.includes("Multi-line goods receipt from PO:")) {
+    // Match PO, Line, and everything after Line (including optional notes)
+    // Example: "Multi-line goods receipt from PO: 1, Line: 1, Rejected: 1 (hi)"
+    const match = formattedNotes.match(/PO:\s*(\d+),\s*Line:\s*(\d+)(.*)/);
+    if (match) {
+      // match[3] may include comma and space, so trim it
+      const trailing = match[3] ? match[3].replace(/^,?\s*/, "") : "";
+      formattedNotes =
+        `PO: ${match[1]}, Line: ${match[2]}` +
+        (trailing ? `, ${trailing}` : "");
+    }
+  }
+
   return {
     ...movement,
     quantity: parseBigDecimal(movement.quantity),
@@ -143,6 +158,7 @@ export const formatStockMovement = (movement) => {
     quantityDisplay: `${Math.abs(parseBigDecimal(movement.quantity))} ${
       movement.productUnit || ""
     }`.trim(),
+    notes: formattedNotes, // Use the formatted notes
   };
 };
 

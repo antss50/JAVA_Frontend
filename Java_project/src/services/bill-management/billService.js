@@ -142,6 +142,11 @@ export const createBill = async (billData) => {
     return { success: false, error: "Bill data is required" };
   }
 
+  console.log("=== BILL SERVICE CREATE DEBUG ===");
+  console.log("Request data:", JSON.stringify(billData, null, 2));
+  console.log("API Endpoint:", BILL_API_BASE);
+  console.log("=================================");
+
   return apiRequest(BILL_API_BASE, {
     method: "POST",
     body: JSON.stringify(billData),
@@ -250,6 +255,20 @@ export const createPurchaseOrder = async (orderData) => {
     method: "POST",
     body: JSON.stringify(orderData),
   });
+};
+
+/**
+ * Get a specific purchase order by ID (purchase orders are stored as bills)
+ * @param {number|string} purchaseOrderId - Purchase order ID
+ * @returns {Promise<Object>} Purchase order data
+ */
+export const getPurchaseOrderById = async (purchaseOrderId) => {
+  if (!purchaseOrderId) {
+    return { success: false, error: "Purchase order ID is required" };
+  }
+
+  // Purchase orders are stored as bills in the system
+  return apiRequest(`${BILL_API_BASE}/${purchaseOrderId}`);
 };
 
 // Search and Filter Functions
@@ -435,6 +454,7 @@ export default {
   // Purchase Orders
   getLowStockAlerts,
   createPurchaseOrder,
+  getPurchaseOrderById,
 
   // Search and Filters
   searchBills,

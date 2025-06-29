@@ -3,7 +3,9 @@ import "./transaction.css";
 import { useStockLedger } from "../../hooks/useStockLedger.js";
 import { usePartyManagement } from "../../hooks/usePartyManagement.js";
 import { useProductManagement } from "../../hooks/useProductManagement.js";
+import { getPurchaseOrderById } from "../../services/bill-management/billService.js";
 import ReturnImportProductsForm from "../../components/ReturnImportProductsForm.jsx";
+import { formatReturnNotes } from "../../utils/inventory-related/importGoodsReturnedFormatter.js";
 
 const ReturnImportedProduct = () => {
   // State for search filters
@@ -19,6 +21,10 @@ const ReturnImportedProduct = () => {
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState(null);
   const [viewMode, setViewMode] = useState("list"); // 'list' or 'details'
+
+  // State for enriched returns with supplier names
+  const [enrichedReturns, setEnrichedReturns] = useState([]);
+  const [enrichingData, setEnrichingData] = useState(false);
 
   // Use stock ledger hook to get RETURN movements
   const {
@@ -77,6 +83,160 @@ const ReturnImportedProduct = () => {
     clearError,
     stockMovements,
   ]);
+
+  /**
+   * Enrich returns with supplier names by fetching purchase order details
+   */
+  const enrichReturnsWithSupplierNames = useCallback(
+    async (returns) => {
+      if (!returns || returns.length === 0) {
+        setEnrichedReturns([]);
+        return;
+      }
+
+      setEnrichingData(true);
+
+      try {
+        const enrichedData = await Promise.all(
+          returns.map(async (returnItem) => {
+            let supplierName = "Không xác định";
+            let billNumber = null;
+            let billDate = null;
+
+            console.log("Processing return item:", returnItem);
+            console.log(
+              "Reference type:",
+              returnItem.referenceType,
+              "Reference ID:",
+              returnItem.referenceDocumentId
+            );
+
+            // If referenceType is GOODS_RETURN or SUPPLIER_RETURN, fetch supplier from PO
+            if (
+              (returnItem.referenceType === "GOODS_RETURN" ||
+                returnItem.referenceType === "SUPPLIER_RETURN") &&
+              returnItem.referenceDocumentId
+            ) {
+              try {
+                console.log(
+                  `Fetching PO details for ID: ${returnItem.referenceDocumentId}`
+                );
+                const poResponse = await getPurchaseOrderById(
+                  returnItem.referenceDocumentId
+                );
+
+                if (poResponse.success && poResponse.data) {
+                  const purchaseOrder = poResponse.data;
+                  console.log("Purchase order data:", purchaseOrder);
+
+                  // Extract bill number and date
+                  if (purchaseOrder.billNumber) {
+                    billNumber = purchaseOrder.billNumber;
+                  }
+                  if (purchaseOrder.billDate) {
+                    billDate = purchaseOrder.billDate;
+                  }
+
+                  // Check if supplier info is directly in the PO
+                  if (purchaseOrder.supplierName) {
+                    supplierName = purchaseOrder.supplierName;
+                  } else if (purchaseOrder.vendorName) {
+                    // Bills use vendorName field
+                    supplierName = purchaseOrder.vendorName;
+                  } else if (purchaseOrder.partyId) {
+                    // Bills use partyId field
+                    const supplier = suppliers.find(
+                      (s) => s.id === purchaseOrder.partyId
+                    );
+                    supplierName =
+                      supplier?.name || `Party ID: ${purchaseOrder.partyId}`;
+                  } else if (purchaseOrder.supplierId) {
+                    // If only supplier ID, find name from suppliers list
+                    const supplier = suppliers.find(
+                      (s) => s.id === purchaseOrder.supplierId
+                    );
+                    supplierName =
+                      supplier?.name ||
+                      `Supplier ID: ${purchaseOrder.supplierId}`;
+                  } else if (purchaseOrder.vendorId) {
+                    // Or vendorId instead of supplierId
+                    const supplier = suppliers.find(
+                      (s) => s.id === purchaseOrder.vendorId
+                    );
+                    supplierName =
+                      supplier?.name || `Vendor ID: ${purchaseOrder.vendorId}`;
+                  }
+                }
+              } catch (error) {
+                console.error(
+                  `Error fetching PO ${returnItem.referenceDocumentId}:`,
+                  error
+                );
+              }
+            } else if (returnItem.partyId) {
+              // Fallback to partyId if available
+              const supplier = suppliers.find(
+                (s) => s.id === returnItem.partyId
+              );
+              supplierName = supplier?.name || "Không xác định";
+            } else if (returnItem.documentReference) {
+              // Handle seeded data: parse supplier from documentReference (e.g., RT-TCTY-001)
+              const supplierCodeMatch =
+                returnItem.documentReference.match(/RT-([A-Z]+)-/);
+              if (supplierCodeMatch) {
+                const supplierCode = supplierCodeMatch[1];
+                console.log("Extracted supplier code:", supplierCode);
+
+                // Map supplier codes to names (based on the pattern seen in the data)
+                const supplierCodeMap = {
+                  TCTY: "Tổng Công Ty Phân Phối Máy Tính",
+                  VLK: "Vua Linh Kiện Điện Tử",
+                  ASIA: "Nhà Phân Phối Thiết Bị Văn Phòng Á Châu",
+                };
+
+                supplierName =
+                  supplierCodeMap[supplierCode] ||
+                  `Supplier Code: ${supplierCode}`;
+              }
+            }
+
+            return {
+              ...returnItem,
+              supplierName,
+              billNumber,
+              billDate,
+            };
+          })
+        );
+
+        setEnrichedReturns(enrichedData);
+        console.log("Enriched returns with supplier names:", enrichedData);
+      } catch (error) {
+        console.error("Error enriching returns with supplier names:", error);
+        // Fallback to original data without supplier names
+        setEnrichedReturns(
+          returns.map((item) => ({
+            ...item,
+            supplierName: "Không xác định",
+            billNumber: null,
+            billDate: null,
+          }))
+        );
+      } finally {
+        setEnrichingData(false);
+      }
+    },
+    [suppliers]
+  );
+
+  // Effect to enrich returns when stockMovements or suppliers change
+  useEffect(() => {
+    if (stockMovements && stockMovements.length > 0 && suppliers.length > 0) {
+      enrichReturnsWithSupplierNames(stockMovements);
+    } else {
+      setEnrichedReturns([]);
+    }
+  }, [stockMovements, suppliers, enrichReturnsWithSupplierNames]);
   /**
    * Handle search input changes
    */
@@ -140,7 +300,7 @@ const ReturnImportedProduct = () => {
    * Filter returns based on search criteria
    */
   const displayedReturns = useMemo(() => {
-    let filtered = [...(stockMovements || [])];
+    let filtered = [...(enrichedReturns || [])];
 
     // Filter by return code (using movement reference)
     if (searchFilters.returnCode.trim()) {
@@ -164,7 +324,7 @@ const ReturnImportedProduct = () => {
     }
 
     return filtered;
-  }, [stockMovements, searchFilters]);
+  }, [enrichedReturns, searchFilters]);
 
   /**
    * Format currency
@@ -174,6 +334,20 @@ const ReturnImportedProduct = () => {
       style: "currency",
       currency: "VND",
     }).format(amount || 0);
+  }, []);
+
+  /**
+   * Format date only (without time)
+   */
+  const formatDate = useCallback((dateString) => {
+    if (!dateString) return "-";
+
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
   }, []);
 
   /**
@@ -192,12 +366,22 @@ const ReturnImportedProduct = () => {
     }).format(date);
   }, []);
   /**
-   * Get supplier name by ID
+   * Get supplier name by ID or from enriched data
    */
   const getSupplierName = useCallback(
-    (supplierId) => {
-      const supplier = suppliers.find((s) => s.id === supplierId);
-      return supplier?.name || "Không xác định";
+    (returnItem) => {
+      // If we have enriched data with supplier name, use it
+      if (returnItem.supplierName) {
+        return returnItem.supplierName;
+      }
+
+      // Fallback to party lookup
+      if (returnItem.partyId) {
+        const supplier = suppliers.find((s) => s.id === returnItem.partyId);
+        return supplier?.name || "Không xác định";
+      }
+
+      return "Không xác định";
     },
     [suppliers]
   );
@@ -273,15 +457,15 @@ const ReturnImportedProduct = () => {
           <button
             className="search-btn"
             onClick={handleSearch}
-            disabled={loading}
-            style={{ display: 'block', width: '100%', marginBottom: 8 }}
+            disabled={loading || enrichingData}
+            style={{ display: "block", width: "100%", marginBottom: 8 }}
           >
-            {loading ? "Đang tìm..." : "🔍 Tìm kiếm"}
+            {loading || enrichingData ? "Đang tìm..." : "🔍 Tìm kiếm"}
           </button>
           <button
             className="search-btn"
             onClick={handleClearSearch}
-            style={{ backgroundColor: "#6c757d", width: '100%' }}
+            style={{ backgroundColor: "#6c757d", width: "100%" }}
           >
             🗑️ Xóa bộ lọc
           </button>
@@ -318,15 +502,17 @@ const ReturnImportedProduct = () => {
               </div>
             )}
             {/* Loading State */}
-            {loading && (
+            {(loading || enrichingData) && (
               <div
                 style={{ textAlign: "center", padding: "20px", color: "#666" }}
               >
-                Đang tải dữ liệu...
+                {enrichingData
+                  ? "Đang tải thông tin nhà cung cấp..."
+                  : "Đang tải dữ liệu..."}
               </div>
             )}
             {/* Returns Table */}
-            {!loading && (
+            {!loading && !enrichingData && (
               <table className="table table-hover mb-0">
                 <thead className="table-danger text-center">
                   <tr>
@@ -350,12 +536,24 @@ const ReturnImportedProduct = () => {
                             {generateReturnCode(returnItem.id)}
                           </span>
                         </td>
-                        <td>{formatDateTime(returnItem.movementDate)}</td>
-                        <td>{getSupplierName(returnItem.partyId)}</td>
-                        <td className="fw-bold">{getProductName(returnItem.productId)}</td>
+                        <td>
+                          {returnItem.billDate
+                            ? formatDate(returnItem.billDate)
+                            : formatDateTime(returnItem.movementDate)}
+                        </td>
+                        <td>{getSupplierName(returnItem)}</td>
+                        <td className="fw-bold">
+                          {getProductName(returnItem.productId)}
+                        </td>
                         <td>{Math.abs(returnItem.quantity)}</td>
-                        <td>{returnItem.documentReference || "-"}</td>
-                        <td className="text-start">{returnItem.notes || "-"}</td>
+                        <td>
+                          {returnItem.billNumber ||
+                            returnItem.documentReference ||
+                            "-"}
+                        </td>
+                        <td className="text-start">
+                          {formatReturnNotes(returnItem.notes) || "-"}
+                        </td>
                         <td>
                           <span className="badge bg-success">Hoàn thành</span>
                         </td>
@@ -373,13 +571,14 @@ const ReturnImportedProduct = () => {
                   ) : (
                     <tr>
                       <td colSpan="9" className="text-center text-muted py-3">
-                        {loading ? "Đang tải..." : "Không có dữ liệu phù hợp"}
+                        {loading || enrichingData
+                          ? "Đang tải..."
+                          : "Không có dữ liệu phù hợp"}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-
             )}{" "}
             {/* Summary */}
             {displayedReturns.length > 0 && (
@@ -453,15 +652,19 @@ const ReturnImportedProduct = () => {
                     </p>
                     <p>
                       <strong>Ngày tạo:</strong>{" "}
-                      {formatDateTime(selectedReturn.movementDate)}
+                      {selectedReturn.billDate
+                        ? formatDate(selectedReturn.billDate)
+                        : formatDateTime(selectedReturn.movementDate)}
                     </p>
                     <p>
                       <strong>Nhà cung cấp:</strong>{" "}
-                      {getSupplierName(selectedReturn.partyId)}
+                      {getSupplierName(selectedReturn)}
                     </p>
                     <p>
                       <strong>Tham chiếu:</strong>{" "}
-                      {selectedReturn.documentReference || "-"}
+                      {selectedReturn.billNumber ||
+                        selectedReturn.documentReference ||
+                        "-"}
                     </p>
                   </div>
 
@@ -476,7 +679,8 @@ const ReturnImportedProduct = () => {
                       {Math.abs(selectedReturn.quantity)}
                     </p>
                     <p>
-                      <strong>Ghi chú:</strong> {selectedReturn.notes || "-"}
+                      <strong>Ghi chú:</strong>{" "}
+                      {formatReturnNotes(selectedReturn.notes) || "-"}
                     </p>
                   </div>
                 </div>

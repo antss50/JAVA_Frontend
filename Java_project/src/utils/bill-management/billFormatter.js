@@ -92,29 +92,52 @@ export const formatPurchaseOrderRequest = (orderData) => {
 export const formatBillRequest = (billData) => {
   if (!billData) throw new Error("Bill data is required");
 
+  const billLines =
+    billData.billLines?.map((line) => {
+      const lineData = {
+        productId:
+          line.productId && line.productId.toString().trim() !== ""
+            ? parseInt(line.productId)
+            : null,
+        description: line.description?.trim() || "",
+        quantity: Math.max(1, parseInt(line.quantity) || 1),
+        unitPrice: (
+          Math.round((parseFloat(line.unitPrice) || 0) * 100) / 100
+        ).toString(), // Send as string
+        lineTotal: (
+          Math.round(
+            (parseFloat(line.unitPrice) || 0) *
+              Math.max(1, parseInt(line.quantity) || 1) *
+              100
+          ) / 100
+        ).toString(), // Calculate and send line total as string
+      };
+
+      // Include id for existing lines (for updates)
+      if (line.id !== undefined && line.id !== null) {
+        lineData.id = line.id;
+      }
+
+      return lineData;
+    }) || [];
+
+  // Calculate total amount
+  const totalAmount = billLines.reduce((sum, line) => {
+    return sum + parseFloat(line.lineTotal || 0);
+  }, 0);
+
   return {
     billNumber: billData.billNumber?.trim(),
     partyId: parseInt(billData.partyId),
+    vendorName: billData.vendorName?.trim() || "", // Add vendor name
     billDate: formatDateForAPI(billData.billDate),
     dueDate: formatDateForAPI(billData.dueDate),
     status: billData.status || "PENDING",
+    totalAmount: totalAmount.toString(), // Send total as string
+    amountPaid: "0", // New bills start with 0 amount paid
     notes: billData.notes?.trim() || "",
-    billLines:
-      billData.billLines?.map((line) => {
-        const lineData = {
-          productId: line.productId ? parseInt(line.productId) : null,
-          description: line.description?.trim() || "",
-          quantity: parseInt(line.quantity),
-          unitPrice: parseFloat(line.unitPrice),
-        };
-
-        // Include id for existing lines (for updates)
-        if (line.id !== undefined && line.id !== null) {
-          lineData.id = line.id;
-        }
-
-        return lineData;
-      }) || [],
+    billLines: billLines,
+    payments: [], // New bills start with empty payments array
   };
 };
 
@@ -270,6 +293,14 @@ export const validateBillData = (billData) => {
     errors.push("Vendor is required");
   }
 
+  // Validate partyId is a valid number
+  if (
+    billData.partyId &&
+    (isNaN(parseInt(billData.partyId)) || parseInt(billData.partyId) <= 0)
+  ) {
+    errors.push("Invalid vendor ID");
+  }
+
   if (!billData.billDate) {
     errors.push("Bill date is required");
   }
@@ -284,6 +315,34 @@ export const validateBillData = (billData) => {
     new Date(billData.dueDate) < new Date(billData.billDate)
   ) {
     errors.push("Due date must be after bill date");
+  }
+
+  // Validate bill lines
+  if (billData.billLines && Array.isArray(billData.billLines)) {
+    billData.billLines.forEach((line, index) => {
+      if (
+        line.productId &&
+        (isNaN(parseInt(line.productId)) || parseInt(line.productId) <= 0)
+      ) {
+        errors.push(`Invalid product ID at line ${index + 1}`);
+      }
+
+      if (
+        !line.quantity ||
+        isNaN(parseInt(line.quantity)) ||
+        parseInt(line.quantity) <= 0
+      ) {
+        errors.push(`Invalid quantity at line ${index + 1}`);
+      }
+
+      if (
+        !line.unitPrice ||
+        isNaN(parseFloat(line.unitPrice)) ||
+        parseFloat(line.unitPrice) < 0
+      ) {
+        errors.push(`Invalid unit price at line ${index + 1}`);
+      }
+    });
   }
 
   return {
@@ -375,19 +434,24 @@ export const isDateOverdue = (dueDate) => {
  */
 export const getBillStatusBadge = (status) => {
   const statusConfig = {
-    PENDING: { class: "badge-warning", text: "Pending", color: "#ffc107" },
-    APPROVED: { class: "badge-success", text: "Approved", color: "#28a745" },
-    PAID: { class: "badge-success", text: "Paid", color: "#28a745" },
+    PENDING: { class: "badge-warning", text: "Chờ xử lý", color: "#ffc107" },
+    APPROVED: { class: "badge-success", text: "Đã duyệt", color: "#28a745" },
+    PAID: { class: "badge-success", text: "Đã thanh toán", color: "#28a745" },
     PARTIALLY_PAID: {
       class: "badge-info",
-      text: "Partially Paid",
+      text: "Thanh toán một phần",
       color: "#17a2b8",
     },
-    OVERDUE: { class: "badge-danger", text: "Overdue", color: "#dc3545" },
+    OVERDUE: { class: "badge-danger", text: "Quá hạn", color: "#dc3545" },
     CANCELLED: {
       class: "badge-secondary",
-      text: "Cancelled",
+      text: "Đã hủy",
       color: "#6c757d",
+    },
+    APPLIED: {
+      class: "badge-success",
+      text: "Đã áp dụng",
+      color: "#D3D3D3",
     },
   };
   return (

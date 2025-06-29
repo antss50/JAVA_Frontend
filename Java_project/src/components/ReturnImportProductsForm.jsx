@@ -13,7 +13,21 @@ import { useState, useEffect, useCallback } from "react";
 import { useImportGoodsReturned } from "../hooks/useImportGoodsReturned.js";
 
 const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
-  // UI state - declare these first before they're used in callbacks
+  // Form state
+  const [formData, setFormData] = useState({
+    billId: "",
+    supplierId: "",
+    referenceNumber: "",
+    returnedBy: "",
+    notes: "",
+    returnDate: new Date().toISOString().split("T")[0],
+    lines: [],
+  });
+
+  // UI state
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [validationErrors, setValidationErrors] = useState([]);
   const [billSearchTerm, setBillSearchTerm] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -37,67 +51,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
   } = useImportGoodsReturned({
     onSuccess: async (response) => {
       console.log("Return submission successful, triggering auto-refresh...");
-
       // Call parent success handler
       onSuccess && onSuccess(response);
-
-      // Reset form state
-      resetForm();
-
-      // Set success message to trigger auto-refresh
-      setShowSuccessMessage(true);
-
-      // Close the form
-      onClose();
-    },
-    onError: (error) => {
-      console.error("Return goods error:", error);
-      setErrors({ submit: error.message });
-    },
-  });
-
-  // Form state (following goods receipt pattern)
-  const [formData, setFormData] = useState({
-    billId: "",
-    supplierId: "",
-    referenceNumber: "",
-    returnedBy: "",
-    notes: "",
-    returnDate: new Date().toISOString().split("T")[0],
-    lines: [],
-  });
-  // UI state
-  const [selectedBill, setSelectedBill] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [validationErrors, setValidationErrors] = useState([]);
-  // Move billSearchTerm declaration above all useCallback hooks that use it
-  const [billSearchTerm, setBillSearchTerm] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Success message state
-
-  // Bill search state
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showBillSearch, setShowBillSearch] = useState(true);
-  const [billPagination, setBillPagination] = useState({
-    page: 0,
-    size: 10,
-    totalPages: 1,
-    totalElements: 0,
-  });
-
-  const {
-    recordGoodsReturn,
-    loading: goodsReturnLoading,
-    errors: goodsReturnErrors,
-    searchReturnableBills,
-    getReturnableBills,
-    getBillForReturn,
-  } = useImportGoodsReturned({
-    onSuccess: async (response) => {
-      console.log("Return submission successful, triggering auto-refresh..."); // Call parent success handler
-      onSuccess && onSuccess(response);
-
       // Form will be reset and refreshed in handleSubmit after this callback
     },
     onError: (error) => {
@@ -330,8 +285,10 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
 
         if (line.quantityToReturn > line.maxQuantity) {
           errors.push(
-            `Dòng ${index + 1
-            }: Số lượng trả về không được vượt quá số lượng có thể trả (${line.maxQuantity
+            `Dòng ${
+              index + 1
+            }: Số lượng trả về không được vượt quá số lượng có thể trả (${
+              line.maxQuantity
             })`
           );
         }
@@ -470,41 +427,6 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
       resetForm();
     }
   }, [isOpen, resetForm]);
-
-  // Auto-refresh function to reload bill data after successful submission
-  const refreshBillData = useCallback(async () => {
-    setIsRefreshing(true);
-    setShowSuccessMessage(true);
-    try {
-      console.log("Auto-refreshing bill data after successful submission...");
-
-      // Reset pagination to first page to see latest changes
-      setBillPagination((prev) => ({
-        ...prev,
-        page: 0,
-      }));
-
-      // Reload bill list based on current search state
-      if (billSearchTerm.trim()) {
-        await handleBillSearch(billSearchTerm);
-      } else {
-        await loadReturnableBills();
-      }
-
-      console.log("Bill data refreshed successfully");
-
-      // Hide success message after a delay
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to refresh bill data:", error);
-      setShowSuccessMessage(false);
-      // Don't show error to user as this is background refresh
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [billSearchTerm, loadReturnableBills, handleBillSearch]);
 
   // Auto-refresh after successful submission
   useEffect(() => {
@@ -659,8 +581,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                 {isSearching
                   ? "Đang tìm..."
                   : isRefreshing
-                    ? "Làm mới..."
-                    : "Tìm kiếm"}
+                  ? "Làm mới..."
+                  : "Tìm kiếm"}
               </button>{" "}
               <button
                 onClick={() => {
@@ -741,8 +663,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                           Ngày nhập:{" "}
                           {bill.billDate
                             ? new Date(bill.billDate).toLocaleDateString(
-                              "vi-VN"
-                            )
+                                "vi-VN"
+                              )
                             : "N/A"}
                         </div>
                       </div>
@@ -817,7 +739,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                             backgroundColor: "white",
                             cursor:
                               billPagination.page >=
-                                billPagination.totalPages - 1
+                              billPagination.totalPages - 1
                                 ? "not-allowed"
                                 : "pointer",
                             fontSize: "12px",
@@ -870,8 +792,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                       <strong>Ngày nhập:</strong>{" "}
                       {selectedBill.billDate
                         ? new Date(selectedBill.billDate).toLocaleDateString(
-                          "vi-VN"
-                        )
+                            "vi-VN"
+                          )
                         : "N/A"}
                     </div>
                     <div>
@@ -1233,7 +1155,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                             (sum, line) =>
                               sum +
                               (line.quantityToReturn || 0) *
-                              (line.unitPrice || 0),
+                                (line.unitPrice || 0),
                             0
                           )
                           .toLocaleString("vi-VN")}{" "}
@@ -1290,7 +1212,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                 padding: "8px 16px",
                 backgroundColor:
                   !selectedBill ||
-                    !formData.lines.some((line) => line.quantityToReturn > 0)
+                  !formData.lines.some((line) => line.quantityToReturn > 0)
                     ? "#ccc"
                     : "#28a745",
                 color: "white",
@@ -1298,7 +1220,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
                 borderRadius: "4px",
                 cursor:
                   !selectedBill ||
-                    !formData.lines.some((line) => line.quantityToReturn > 0)
+                  !formData.lines.some((line) => line.quantityToReturn > 0)
                     ? "not-allowed"
                     : "pointer",
               }}
@@ -1306,8 +1228,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
               {loading
                 ? "Đang tạo..."
                 : isRefreshing
-                  ? "Làm mới dữ liệu..."
-                  : "Tạo phiếu trả hàng"}
+                ? "Làm mới dữ liệu..."
+                : "Tạo phiếu trả hàng"}
             </button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import useProductReports from "../../hooks/useProductReport";
-import './ProductReport.css';
+import useProductReports from "./hooks/useProductReport";
+import "./ProductReport.css";
 
 const ProductReport = () => {
   // ========== CUSTOM HOOK ==========
@@ -139,7 +139,6 @@ const ProductReport = () => {
   const renderFilterInputs = () => {
     return (
       <div className="filters-section d-flex gap-5">
-
         {/* Report Type Selection */}
         <div className="filter-group">
           <label>Loại báo cáo:</label>
@@ -329,7 +328,11 @@ const ProductReport = () => {
           <div className="d-flex">
             <h1>Báo Cáo Hàng Hoá</h1>
             <div className="report-actions">
-              <button onClick={refreshData} disabled={isLoading} className="bg-white text-black fs-2 p-0 ms-3">
+              <button
+                onClick={refreshData}
+                disabled={isLoading}
+                className="bg-white text-black fs-2 p-0 ms-3"
+              >
                 {isLoading ? "Đang tải..." : "↺"}
               </button>
             </div>
@@ -390,7 +393,9 @@ const ProductReport = () => {
                   {currentReport?.productSalesDetails &&
                     currentReport.productSalesDetails.length > 0 && (
                       <div className="product-details">
-                        <h4 className="mb-4">Chi tiết bán hàng theo sản phẩm</h4>
+                        <h4 className="mb-4">
+                          Chi tiết bán hàng theo sản phẩm
+                        </h4>
                         <table className="table table-hover mb-0">
                           <thead className="table-primary text-center">
                             <tr>
@@ -402,21 +407,30 @@ const ProductReport = () => {
                             </tr>
                           </thead>
                           <tbody className="text-center">
-                            {currentReport.productSalesDetails.map((product, index) => (
-                              <tr key={index}>
-                                <td className="fw-bold">{product.productName}</td>
-                                <td>
-                                  <span className="badge bg-light text-dark">
-                                    {product.category || "Không rõ"}
-                                  </span>
-                                </td>
-                                <td>{product.quantitySold?.toLocaleString() || 0}</td>
-                                <td className="fw-bold text-success">
-                                  {product.totalRevenue?.toLocaleString()} 
-                                </td>
-                                <td>{product.averagePrice?.toLocaleString()}</td>
-                              </tr>
-                            ))}
+                            {currentReport.productSalesDetails.map(
+                              (product, index) => (
+                                <tr key={index}>
+                                  <td className="fw-bold">
+                                    {product.productName}
+                                  </td>
+                                  <td>
+                                    <span className="badge bg-light text-dark">
+                                      {product.category || "Không rõ"}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    {product.quantitySold?.toLocaleString() ||
+                                      0}
+                                  </td>
+                                  <td className="fw-bold text-success">
+                                    {product.totalRevenue?.toLocaleString()}
+                                  </td>
+                                  <td>
+                                    {product.averagePrice?.toLocaleString()}
+                                  </td>
+                                </tr>
+                              )
+                            )}
                           </tbody>
                         </table>
                       </div>

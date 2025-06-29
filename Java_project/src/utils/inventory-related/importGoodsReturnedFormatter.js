@@ -1,4 +1,27 @@
 /**
+ * Extracts and formats PO, Product, and Original Order Line from notes string
+ * Example: "Supplier return (PO: 9, Product: 12) (Original Order Line: 9)" => "PO: 9, Product: 12 (Original Order Line: 9)"
+ * @param {string} notes
+ * @returns {string}
+ */
+export function formatReturnNotes(notes) {
+  if (!notes || typeof notes !== "string") return notes;
+  // Try to match PO, Product, and anything after (Original Order Line: ...)
+  // Example: Supplier return (PO: 9, Product: 12) (Original Order Line: 9)
+  const match = notes.match(
+    /PO:\s*(\d+),\s*Product:\s*(\d+)\)\s*\((Original Order Line: [^)]*)\)/
+  );
+  if (match) {
+    return `PO: ${match[1]}, Product: ${match[2]} (${match[3]})`;
+  }
+  // Fallback: just try to extract PO and everything after
+  const poMatch = notes.match(/PO:\s*(\d+)(.*)/);
+  if (poMatch) {
+    return `PO: ${poMatch[1]}${poMatch[2] ? poMatch[2] : ""}`.trim();
+  }
+  return notes;
+}
+/**
  * Import Goods Returned Formatter Utilities
  * Handles transformation of goods return data between API and frontend formats
  */

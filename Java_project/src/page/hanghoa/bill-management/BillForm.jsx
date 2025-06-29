@@ -154,13 +154,13 @@ const BillForm = () => {
       prev.map((line, i) =>
         i === index
           ? {
-            ...line,
-            productId,
-            productName: selectedProduct ? selectedProduct.name : "",
-            description: selectedProduct
-              ? `${selectedProduct.name} - ${selectedProduct.unit}`
-              : "",
-          }
+              ...line,
+              productId: productId || "",
+              productName: selectedProduct ? selectedProduct.name : "",
+              description: selectedProduct
+                ? `${selectedProduct.name} - ${selectedProduct.unit || ""}`
+                : "",
+            }
           : line
       )
     );
@@ -243,6 +243,21 @@ const BillForm = () => {
       errors.push("Vui lòng thêm ít nhất một dòng hóa đơn hợp lệ");
     }
 
+    // Validate that selected products exist
+    const invalidProductLines = billLines.filter((line) => {
+      if (line.productId && line.productId.toString().trim() !== "") {
+        const productExists = allProducts.some(
+          (product) => product.id === parseInt(line.productId)
+        );
+        return !productExists;
+      }
+      return false;
+    });
+
+    if (invalidProductLines.length > 0) {
+      errors.push("Một số sản phẩm được chọn không tồn tại trong hệ thống");
+    }
+
     return errors;
   };
 
@@ -252,9 +267,16 @@ const BillForm = () => {
     if (validationErrors.length > 0) {
       showToast(validationErrors.join(", "), "error");
       return;
-    } // Prepare bill data
+    }
+
+    // Prepare bill data
+    const selectedSupplier = suppliers.find(
+      (s) => s.id === parseInt(billData.partyId)
+    );
     const formattedBillData = {
       ...billData,
+      partyId: parseInt(billData.partyId) || null, // Ensure partyId is an integer
+      vendorName: selectedSupplier ? selectedSupplier.name : "", // Add vendor name
       billLines: billLines
         .filter(
           (line) =>
@@ -262,10 +284,22 @@ const BillForm = () => {
         )
         .map((line) => {
           const lineData = {
-            productId: line.productId ? parseInt(line.productId) : null,
+            productId:
+              line.productId && line.productId.toString().trim() !== ""
+                ? parseInt(line.productId)
+                : null,
             description: line.description.trim(),
-            quantity: parseInt(line.quantity),
-            unitPrice: parseFloat(line.unitPrice),
+            quantity: Math.max(1, parseInt(line.quantity) || 1),
+            unitPrice: (
+              Math.round((parseFloat(line.unitPrice) || 0) * 100) / 100
+            ).toString(), // Send as string
+            lineTotal: (
+              Math.round(
+                (parseFloat(line.unitPrice) || 0) *
+                  Math.max(1, parseInt(line.quantity) || 1) *
+                  100
+              ) / 100
+            ).toString(), // Calculate and send line total as string
           };
 
           // Only include id for existing lines (not for new lines with id: null)
@@ -275,6 +309,40 @@ const BillForm = () => {
           return lineData;
         }),
     };
+
+    // Add debugging for bill creation
+    console.log("=== BILL CREATION DEBUG ===");
+    console.log("Original bill lines:", billLines);
+    console.log("Formatted bill data:", formattedBillData);
+    console.log(
+      "Product IDs in request:",
+      formattedBillData.billLines.map((line) => ({
+        productId: line.productId,
+        productIdType: typeof line.productId,
+        productIdValid: Number.isInteger(line.productId),
+        quantity: line.quantity,
+        quantityType: typeof line.quantity,
+        quantityValid: Number.isInteger(line.quantity),
+        unitPrice: line.unitPrice,
+        unitPriceType: typeof line.unitPrice,
+        unitPriceValid: !isNaN(line.unitPrice) && isFinite(line.unitPrice),
+        description: line.description,
+      }))
+    );
+    console.log("Party ID:", {
+      partyId: formattedBillData.partyId,
+      partyIdType: typeof formattedBillData.partyId,
+      partyIdValid: Number.isInteger(formattedBillData.partyId),
+      vendorName: formattedBillData.vendorName,
+      selectedSupplier: selectedSupplier
+        ? { id: selectedSupplier.id, name: selectedSupplier.name }
+        : null,
+    });
+    console.log(
+      "Available products:",
+      allProducts.map((p) => ({ id: p.id, name: p.name }))
+    );
+    console.log("========================");
 
     // Add debugging for bill updates
     if (isEditMode) {
@@ -553,7 +621,9 @@ const BillForm = () => {
                   <option value="">Chọn sản phẩm...</option>
                   {allProducts.length === 0 ? (
                     <option value="" disabled>
-                      {productLoading ? "Đang tải..." : "Không có dữ liệu sản phẩm"}
+                      {productLoading
+                        ? "Đang tải..."
+                        : "Không có dữ liệu sản phẩm"}
                     </option>
                   ) : (
                     allProducts.map((product) => (
@@ -604,13 +674,18 @@ const BillForm = () => {
               </td>
 
               <td className="fw-bold text-success text-end">
-                {calculateLineTotal(line.quantity, line.unitPrice).toLocaleString()} ₫
+                {calculateLineTotal(
+                  line.quantity,
+                  line.unitPrice
+                ).toLocaleString()}{" "}
+                ₫
               </td>
 
               <td className="text-center">
                 <button
-                  className={`btn btn-sm ${billLines.length === 1 ? "btn-secondary" : "btn-danger"
-                    }`}
+                  className={`btn btn-sm ${
+                    billLines.length === 1 ? "btn-secondary" : "btn-danger"
+                  }`}
                   onClick={() => removeLine(index)}
                   disabled={billLines.length === 1}
                   title="Xóa dòng"
@@ -635,7 +710,6 @@ const BillForm = () => {
           </tr>
         </tfoot>
       </table>
-
     </div>
   );
 
@@ -689,8 +763,8 @@ const BillForm = () => {
         {loading.creating || loading.updating
           ? "Đang lưu..."
           : isEditMode
-            ? "Cập nhật"
-            : "Tạo hóa đơn"}
+          ? "Cập nhật"
+          : "Tạo hóa đơn"}
       </button>
     </div>
   );

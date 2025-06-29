@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import "./transaction.css";
 import { useStockLedger } from "../../hooks/useStockLedger.js";
 import GoodsReceiptForm from "../../components/GoodsReceiptForm.jsx";
+import ToastMessage from "../../component/ToastMessage.jsx";
 
 const ImportProduct = () => {
   // State for search filters
@@ -15,6 +16,8 @@ const ImportProduct = () => {
   // UI state
   const [showGoodsReceiptForm, setShowGoodsReceiptForm] = useState(false);
   const [viewMode, setViewMode] = useState("summary"); // 'summary' or 'detailed'
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Use stock ledger hook to get RECEIPT movements
   const {
@@ -98,6 +101,27 @@ const ImportProduct = () => {
   const handleGoodsReceiptSuccess = useCallback(
     (result) => {
       console.log("Goods receipt created successfully:", result);
+
+      // Extract PO and Line information from the response data
+      if (result && result.data && Array.isArray(result.data)) {
+        const poLineMessages = result.data.map((item) => {
+          // Extract PO and Line from notes (format: "Multi-line goods receipt from PO: 6, Line: 10")
+          const notes = item.notes || "";
+          const poMatch = notes.match(/PO:\s*(\d+)/);
+          const lineMatch = notes.match(/Line:\s*(\d+)/);
+
+          if (poMatch && lineMatch) {
+            return `PO: ${poMatch[1]}, Line: ${lineMatch[1]}`;
+          }
+          return notes; // fallback to original notes if pattern doesn't match
+        });
+
+        // Join all PO/Line messages
+        const message = poLineMessages.join("; ");
+        setSuccessMessage(message);
+        setShowSuccessToast(true);
+      }
+
       // Refresh the data
       loadGoodsReceipts();
       setShowGoodsReceiptForm(false);
@@ -290,14 +314,14 @@ const ImportProduct = () => {
             className="search-btn"
             onClick={handleSearch}
             disabled={loading}
-            style={{ display: 'block', width: '100%', marginBottom: 8 }}
+            style={{ display: "block", width: "100%", marginBottom: 8 }}
           >
             {loading ? "Đang tìm..." : "🔍 Tìm kiếm"}
           </button>
           <button
             className="search-btn"
             onClick={handleClearSearch}
-            style={{ backgroundColor: "#6c757d", width: '100%' }}
+            style={{ backgroundColor: "#6c757d", width: "100%" }}
           >
             🗑️ Xóa bộ lọc
           </button>
@@ -381,7 +405,9 @@ const ImportProduct = () => {
                   groupedReceipts.map((receipt, index) => (
                     <tr key={receipt.documentReference || index}>
                       <td>
-                        <span className="badge bg-secondary">{receipt.documentReference}</span>
+                        <span className="badge bg-secondary">
+                          {receipt.documentReference}
+                        </span>
                       </td>
                       <td>{formatDateTime(receipt.eventTimestamp)}</td>
                       <td>{receipt.warehouseName || "Kho chính"}</td>
@@ -390,10 +416,11 @@ const ImportProduct = () => {
                       <td>{receipt.userId || "N/A"}</td>
                       <td>
                         <span
-                          className={`badge ${getReceiptStatus(receipt) === "Hoàn tất"
-                            ? "bg-success"
-                            : "bg-warning text-dark"
-                            }`}
+                          className={`badge ${
+                            getReceiptStatus(receipt) === "Hoàn tất"
+                              ? "bg-success"
+                              : "bg-warning text-dark"
+                          }`}
                         >
                           {getReceiptStatus(receipt)}
                         </span>
@@ -410,7 +437,6 @@ const ImportProduct = () => {
                 )}
               </tbody>
             </table>
-
 
             {groupedReceipts.length > 0 && (
               <div
@@ -451,7 +477,9 @@ const ImportProduct = () => {
                   filteredMovements.map((movement, index) => (
                     <tr key={movement.id || index}>
                       <td>
-                        <span className="badge bg-secondary">{movement.documentReference}</span>
+                        <span className="badge bg-secondary">
+                          {movement.documentReference}
+                        </span>
                       </td>
                       <td className="fw-bold">{movement.productName}</td>
                       <td>{movement.productUnit}</td>
@@ -463,10 +491,11 @@ const ImportProduct = () => {
                       <td>{movement.userId || "N/A"}</td>
                       <td>
                         <span
-                          className={`badge ${movement.referenceType === "GOODS_RECEIPT"
+                          className={`badge ${
+                            movement.referenceType === "GOODS_RECEIPT"
                               ? "bg-primary"
                               : "bg-warning text-dark"
-                            }`}
+                          }`}
                         >
                           {movement.referenceType || "N/A"}
                         </span>
@@ -483,7 +512,6 @@ const ImportProduct = () => {
                 )}
               </tbody>
             </table>
-
 
             {filteredMovements.length > 0 && (
               <div
@@ -506,6 +534,13 @@ const ImportProduct = () => {
           isOpen={showGoodsReceiptForm}
           onClose={() => setShowGoodsReceiptForm(false)}
           onSuccess={handleGoodsReceiptSuccess}
+        />
+        {/* Success Toast Message */}
+        <ToastMessage
+          show={showSuccessToast}
+          onClose={() => setShowSuccessToast(false)}
+          message={successMessage}
+          variant="success"
         />
       </div>
     </div>

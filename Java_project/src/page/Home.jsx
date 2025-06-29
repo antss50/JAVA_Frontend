@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import "../App.css";
-import useProductReports from "../hooks/useProductReport";
+import useProductReports from "./baocao/hooks/useProductReport";
 
 const Home = () => {
   const [doanhThu, setDoanhThu] = useState(0);

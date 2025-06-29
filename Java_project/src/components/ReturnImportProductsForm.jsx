@@ -13,70 +13,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useImportGoodsReturned } from "../hooks/useImportGoodsReturned.js";
 
 const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
-  // Auto-refresh function to reload bill data after successful submission
-  const refreshBillData = useCallback(async () => {
-    setIsRefreshing(true);
-    setShowSuccessMessage(true);
-    try {
-      console.log("Auto-refreshing bill data after successful submission...");
-
-      // Reset pagination to first page to see latest changes
-      setBillPagination((prev) => ({
-        ...prev,
-        page: 0,
-      }));
-
-      // Reload bill list based on current search state
-      if (billSearchTerm.trim()) {
-        await handleBillSearch(billSearchTerm);
-      } else {
-        await loadReturnableBills();
-      }
-
-      console.log("Bill data refreshed successfully");
-
-      // Hide success message after a delay
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to refresh bill data:", error);
-      setShowSuccessMessage(false);
-      // Don't show error to user as this is background refresh
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [billSearchTerm, loadReturnableBills, handleBillSearch]);
-
-  const {
-    recordGoodsReturn,
-    loading: goodsReturnLoading,
-    errors: goodsReturnErrors,
-    searchReturnableBills,
-    getReturnableBills,
-    getBillForReturn,
-  } = useImportGoodsReturned({
-    onSuccess: async (response) => {
-      console.log("Return submission successful, triggering auto-refresh...");
-
-      // Call parent success handler
-      onSuccess && onSuccess(response);
-
-      // Reset form state
-      resetForm();
-
-      // Auto-refresh bill data to reflect updated quantities
-      await refreshBillData();
-
-      // Close the form after refresh
-      onClose();
-    },
-    onError: (error) => {
-      console.error("Return goods error:", error);
-      setErrors({ submit: error.message });
-    },
-  });
-
   // Form state (following goods receipt pattern)
   const [formData, setFormData] = useState({
     billId: "",
@@ -91,6 +27,7 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
   const [selectedBill, setSelectedBill] = useState(null);
   const [errors, setErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState([]);
+  // Move billSearchTerm declaration above all useCallback hooks that use it
   const [billSearchTerm, setBillSearchTerm] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false); // New state for refresh loading
   const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Success message state
@@ -104,6 +41,26 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
     size: 10,
     totalPages: 1,
     totalElements: 0,
+  });
+
+  const {
+    recordGoodsReturn,
+    loading: goodsReturnLoading,
+    errors: goodsReturnErrors,
+    searchReturnableBills,
+    getReturnableBills,
+    getBillForReturn,
+  } = useImportGoodsReturned({
+    onSuccess: async (response) => {
+      console.log("Return submission successful, triggering auto-refresh..."); // Call parent success handler
+      onSuccess && onSuccess(response);
+
+      // Form will be reset and refreshed in handleSubmit after this callback
+    },
+    onError: (error) => {
+      console.error("Return goods error:", error);
+      setErrors({ submit: error.message });
+    },
   });
 
   // Use loading state from useImportGoodsReturned hook
@@ -159,9 +116,13 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
   /**
    * Handle bill search
    */
+  // billSearchTerm must be declared before this useCallback
   const handleBillSearch = useCallback(
-    async (searchTerm = billSearchTerm) => {
-      if (!searchTerm.trim()) {
+    async (searchTerm) => {
+      // Default to billSearchTerm if searchTerm is undefined
+      const term =
+        typeof searchTerm === "undefined" ? billSearchTerm : searchTerm;
+      if (!term.trim()) {
         // If search term is empty, load all returnable bills
         await loadReturnableBills();
         return;
@@ -171,8 +132,8 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
       try {
         const result = await searchReturnableBills(
           {
-            billNumber: searchTerm,
-            vendorName: searchTerm,
+            billNumber: term,
+            vendorName: term,
           },
           {
             page: 0,
@@ -198,7 +159,12 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
         setIsSearching(false);
       }
     },
-    [searchReturnableBills, billSearchTerm, billPagination.size]
+    [
+      searchReturnableBills,
+      billSearchTerm,
+      billPagination.size,
+      loadReturnableBills,
+    ]
   );
 
   /**
@@ -330,11 +296,46 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
         }
       }
     });
-
     console.log("Validation errors:", errors); // Debug log
     setValidationErrors(errors);
     return errors.length === 0;
   }, [selectedBill, formData]);
+
+  // Auto-refresh function to reload bill data after successful submission
+  const refreshBillData = useCallback(async () => {
+    setIsRefreshing(true);
+    setShowSuccessMessage(true);
+    try {
+      console.log("Auto-refreshing bill data after successful submission...");
+
+      // Reset pagination to first page to see latest changes
+      setBillPagination((prev) => ({
+        ...prev,
+        page: 0,
+      }));
+
+      // Reload bill list based on current search state
+      if (billSearchTerm.trim()) {
+        await handleBillSearch(billSearchTerm);
+      } else {
+        await loadReturnableBills();
+      }
+
+      console.log("Bill data refreshed successfully");
+
+      // Hide success message after a delay
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to refresh bill data:", error);
+      setShowSuccessMessage(false);
+      // Don't show error to user as this is background refresh
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [billSearchTerm, loadReturnableBills, handleBillSearch]);
+
   /**
    * Handle form submission
    */ const handleSubmit = useCallback(async () => {
@@ -383,21 +384,41 @@ const ReturnImportProductsForm = ({ isOpen, onClose, onSuccess }) => {
             };
           }),
       };
-
       console.log("Submitting return data:", returnData); // Debug log
 
       const result = await recordGoodsReturn(returnData);
       console.log("Return submission result:", result); // Debug log
+
+      // If submission was successful, handle post-submission logic
+      if (result) {
+        console.log("Return submission successful, triggering auto-refresh...");
+
+        // Reset form state
+        resetForm();
+
+        // Auto-refresh bill data to reflect updated quantities
+        await refreshBillData();
+
+        // Close the form after refresh
+        onClose();
+      }
     } catch (error) {
       console.error("Error submitting return:", error);
       setErrors({ submit: error.message });
     }
-  }, [validateForm, recordGoodsReturn, formData, selectedBill]);
+  }, [
+    validateForm,
+    recordGoodsReturn,
+    formData,
+    selectedBill,
+    resetForm,
+    refreshBillData,
+    onClose,
+  ]);
 
   /**
    * Handle close
-   */
-  const handleClose = useCallback(() => {
+   */ const handleClose = useCallback(() => {
     resetForm();
     onClose();
   }, [resetForm, onClose]);

@@ -6,20 +6,16 @@
  */
 export function formatReturnNotes(notes) {
   if (!notes || typeof notes !== "string") return notes;
-  // Try to match PO, Product, and anything after (Original Order Line: ...)
-  // Example: Supplier return (PO: 9, Product: 12) (Original Order Line: 9)
-  const match = notes.match(
-    /PO:\s*(\d+),\s*Product:\s*(\d+)\)\s*\((Original Order Line: [^)]*)\)/
-  );
-  if (match) {
-    return `PO: ${match[1]}, Product: ${match[2]} (${match[3]})`;
+  // Nếu có dấu '-', lấy phần sau dấu '-' (và trước '(' nếu có)
+  if (notes.includes("-")) {
+    let afterDash = notes.split("-")[1];
+    if (afterDash.includes("(")) {
+      afterDash = afterDash.split("(")[0];
+    }
+    return afterDash.trim();
   }
-  // Fallback: just try to extract PO and everything after
-  const poMatch = notes.match(/PO:\s*(\d+)(.*)/);
-  if (poMatch) {
-    return `PO: ${poMatch[1]}${poMatch[2] ? poMatch[2] : ""}`.trim();
-  }
-  return notes;
+  // Nếu không có dấu '-', lấy toàn bộ
+  return notes.trim();
 }
 /**
  * Import Goods Returned Formatter Utilities
@@ -472,9 +468,8 @@ export const formatSuccessMessage = (response) => {
 
   if (Array.isArray(response)) {
     const count = response.length;
-    return `Successfully recorded return for ${count} product${
-      count > 1 ? "s" : ""
-    }`;
+    return `Successfully recorded return for ${count} product${count > 1 ? "s" : ""
+      }`;
   }
 
   return "Goods return recorded successfully";

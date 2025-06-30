@@ -473,8 +473,7 @@
 }
 
 .status-customer-return {
-  background-color: #e8f5e8;
-  color: #2e7d32;
+  background-color: #5cd75c;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -482,8 +481,7 @@
 }
 
 .status-confirmed {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: #1976d2;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
